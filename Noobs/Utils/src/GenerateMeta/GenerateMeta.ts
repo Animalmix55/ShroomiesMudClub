@@ -12,6 +12,7 @@ import {
     LayerTypes,
 } from './Types';
 import { getOneOfOnes } from './OneOfOnes';
+import { isExcluded } from './Exclusions';
 
 export const ASSETDIR = path.resolve('./src/Assets/Attributes');
 export const CONFIGURATIONOUTDIR = `${path.resolve(
@@ -33,11 +34,6 @@ const pickRandomAttribute = (attribute: Layer) => {
             selectedAttribute = a;
         }
     });
-
-    if (attribute.type === LayerType.Eye && !selectedAttribute) {
-        console.error(assets, currentValue);
-        process.exit();
-    }
 
     return selectedAttribute;
 };
@@ -100,10 +96,18 @@ const isValid = (NFT: ERC721Meta, id: number, last?: ERC721Meta) => {
 
             if (lastAttr.value === a.value) matchingAttributes.push(lastAttr);
         });
-        if (matchingAttributes.length > 0) return false;
+        if (matchingAttributes.length > 1) return false;
+        if (
+            matchingAttributes.some(
+                (a) =>
+                    a.trait_type === String(LayerType.Background) ||
+                    a.trait_type === String(LayerType.Body)
+            )
+        )
+            return false;
     }
 
-    return true;
+    return !isExcluded(NFT);
 };
 
 type Rarities = { [layer: string]: { [assetId: string]: number } };

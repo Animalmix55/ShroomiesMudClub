@@ -8,7 +8,8 @@ export const generateOneOfOne = (
     bg: string,
     texture: string | undefined,
     body: string,
-    eye: string,
+    eyes: string,
+    pinheads: string | undefined,
     headwear: string | undefined,
     accessory: string
 ): OneOfOnes[number] => ({
@@ -26,13 +27,21 @@ export const generateOneOfOne = (
                   },
               ]
             : []),
+        ...(pinheads
+            ? [
+                  {
+                      trait_type: String(LayerType.Pinheads),
+                      value: pinheads,
+                  },
+              ]
+            : []),
         {
             trait_type: String(LayerType.Body),
             value: body,
         },
         {
-            trait_type: String(LayerType.Eye),
-            value: eye,
+            trait_type: String(LayerType.Eyes),
+            value: eyes,
         },
         ...(headwear
             ? [

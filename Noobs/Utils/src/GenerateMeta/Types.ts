@@ -1,8 +1,9 @@
 export enum LayerType {
     Background = 'Background',
     Texture = 'Texture',
+    Pinheads = 'Pinheads',
     Body = 'Body',
-    Eye = 'Eye',
+    Eyes = 'Eyes',
     Headwear = 'Headwear',
     Accessory = 'Accessory',
 }
@@ -10,20 +11,14 @@ export enum LayerType {
 export const LayerTypes = [
     LayerType.Background,
     LayerType.Texture,
+    LayerType.Pinheads,
     LayerType.Body,
-    LayerType.Eye,
+    LayerType.Eyes,
     LayerType.Headwear,
     LayerType.Accessory,
 ];
 
-export const AttributeOrder = [
-    LayerType.Background,
-    LayerType.Texture,
-    LayerType.Body,
-    LayerType.Eye,
-    LayerType.Headwear,
-    LayerType.Accessory,
-];
+export const AttributeOrder = LayerTypes;
 
 if (LayerTypes.length !== AttributeOrder.length) {
     console.error('Invalid order versus types specified');
