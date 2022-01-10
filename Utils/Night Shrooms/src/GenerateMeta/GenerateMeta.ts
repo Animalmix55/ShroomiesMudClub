@@ -113,7 +113,7 @@ const getAttribute = (nft: ERC721Meta, layer: LayerType) => {
 const applyRules = (_NFT: ERC721Meta, originalLayers: Layer[]) => {
     let NFT = { ..._NFT, attributes: [..._NFT.attributes] } as ERC721Meta;
 
-    const face = getAttribute(NFT, LayerType.Face);
+    let face = getAttribute(NFT, LayerType.Face);
     const targetFaces = ['HAL', 'KITT-Y'].map((a) =>
         getAsset(a, LayerType.Face, originalLayers)
     );
@@ -172,20 +172,212 @@ const applyRules = (_NFT: ERC721Meta, originalLayers: Layer[]) => {
         };
     }
 
+    const handItem = getAttribute(NFT, LayerType['Hand Item']);
+    const greedo = getAsset('GREEDO', LayerType['Hand Item'], originalLayers);
+    const tacVest = getAsset(
+        'TAC VEST',
+        LayerType['Body Gear'],
+        originalLayers
+    );
+    const tacSweatshirt = getAsset(
+        'TAC HOODIE',
+        LayerType['Body Gear'],
+        originalLayers
+    );
+
+    if (handItem?.value === greedo.displayName) {
+        const hasTac = crypto.randomInt(100) <= 15;
+        if (hasTac) {
+            const hasSweat = crypto.randomInt(100) <= 50;
+            NFT = {
+                ...NFT,
+                attributes: [
+                    ...NFT.attributes.filter(
+                        (l) => l.trait_type !== String(LayerType['Body Gear'])
+                    ),
+                    {
+                        trait_type: String(LayerType['Body Gear']),
+                        value: hasSweat
+                            ? tacSweatshirt.displayName
+                            : tacVest.displayName,
+                    },
+                ],
+            };
+        }
+    }
+
+    const foreground = getAttribute(NFT, LayerType.Foreground);
+    const fireflies = getAsset(
+        'FIREFLIES',
+        LayerType.Foreground,
+        originalLayers
+    );
+    const headlamp = getAsset('HEADLAMP', LayerType.Headgear, originalLayers);
+
+    if (foreground?.value === fireflies.displayName) {
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (l) => l.trait_type !== String(LayerType.Headgear)
+                ),
+                {
+                    trait_type: String(LayerType.Headgear),
+                    value: headlamp.displayName,
+                },
+            ],
+        };
+    }
+
+    // MATCH GILL COLOR
+    const bodySpots = getAttribute(NFT, LayerType['Body Spots']);
+    const headSpots = getAttribute(NFT, LayerType['Head Spots']);
+    const gill = getAttribute(NFT, LayerType.Gills) as ERC721Attribute;
+    const matchGill = crypto.randomInt(100) <= 80;
+
+    let gillAsset = gill.value;
+
+    if (matchGill && (headSpots || bodySpots)) {
+        const targetColor = headSpots?.value || (bodySpots?.value as string);
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    }
+
+    let headGear = getAttribute(NFT, LayerType.Headgear);
+    if (headGear && headGear.value.includes('HALO')) {
+        const targetColor = headGear.value.split(' ')[1];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    }
+
+    face = getAttribute(NFT, LayerType.Face);
+    if (face?.value.includes('LEFT EYE')) {
+        const targetColor = face.value.split(' ')[2];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (face?.value.includes('BEAD') && crypto.randomInt(100) <= 50) {
+        const targetColor = face.value.split(' ')[1];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (
+        face?.value.includes('X X SILENT') &&
+        crypto.randomInt(100) <= 80
+    ) {
+        const targetColor = face.value.split(' ')[3];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (face?.value.includes('X X GOO') && crypto.randomInt(100) <= 50) {
+        const targetColor = face.value.split(' ')[3];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (
+        face?.value.includes('GOO ELECTRIC') &&
+        crypto.randomInt(100) <= 50
+    ) {
+        const targetColor = face.value.split(' ')[2];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (
+        face?.value.includes('SOLID BEAM ELECTRIC') &&
+        crypto.randomInt(100) <= 65
+    ) {
+        const targetColor = face.value.split(' ')[3];
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    } else if (face?.value.includes('REPTILE') && crypto.randomInt(100) <= 75) {
+        const faceSections = face.value.split(' ');
+
+        try {
+            const targetColor = faceSections[faceSections.length - 2];
+            const gillValue = gill.value.split(' ');
+            gillValue[0] = targetColor;
+
+            gillAsset = gillValue.join(' ');
+            getAsset(gillAsset, LayerType.Gills, originalLayers);
+        } catch (e) {
+            const targetColor = faceSections[0];
+            const gillValue = gill.value.split(' ');
+            gillValue[0] = targetColor;
+
+            gillAsset = gillValue.join(' ');
+        }
+    }
+
+    const bodyGear = getAttribute(NFT, LayerType['Body Gear']);
+    if (bodyGear?.value.includes('SLASHER') && (bodySpots || headSpots)) {
+        const targetColor = (headSpots?.value || bodySpots?.value) as string;
+
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    }
+
+    headGear = getAttribute(NFT, LayerType.Headgear);
+    if (headGear?.value.includes('ANTLERS') && crypto.randomInt(100) <= 75) {
+        const targetColor = headGear.value.split(' ')[1];
+
+        const gillValue = gill.value.split(' ');
+        gillValue[0] = targetColor;
+
+        gillAsset = gillValue.join(' ');
+    }
+
+    let newGill: Asset;
+    try {
+        newGill = getAsset(gillAsset, LayerType.Gills, originalLayers);
+    } catch (e) {
+        newGill = getAsset(
+            gillAsset.replace(' GLOW', ''),
+            LayerType.Gills,
+            originalLayers
+        );
+    }
+
+    // assign new gill
+    NFT = {
+        ...NFT,
+        attributes: [
+            ...NFT.attributes.filter(
+                (l) => l.trait_type !== String(LayerType.Gills)
+            ),
+            {
+                trait_type: String(LayerType.Gills),
+                value: newGill.displayName,
+            },
+        ],
+    };
+
     return NFT;
 };
 
 const attributesInDomain = (
     _NFT: ERC721Meta,
     originalLayers: Layer[],
-    validBackgrounds: string[] | undefined | true,
+    validBackgrounds: string[] | true,
     validTextures: string[] | undefined | true,
-    validGills: string[] | undefined | true,
-    validBodies: string[] | undefined | true,
+    validGills: string[] | true,
+    validBodies: string[] | true,
     validBodySpots: string[] | undefined | true,
     validHeadSpots: string[] | undefined | true,
     validBodyGears: string[] | undefined | true,
-    validFaces: string[] | undefined | true,
+    validFaces: string[] | true,
     validHeadGears: string[] | undefined | true,
     validHats: string[] | undefined | true,
     validForegrounds: string[] | undefined | true,
@@ -229,7 +421,24 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === bg?.value))
         )
     ) {
-        return false;
+        const newBackground =
+            validBackgrounds[crypto.randomInt(validBackgrounds.length)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Background)
+                ),
+                {
+                    trait_type: String(LayerType.Background),
+                    value: getAsset(
+                        newBackground,
+                        LayerType.Background,
+                        originalLayers
+                    ).displayName,
+                },
+            ],
+        };
     }
 
     // test texture
@@ -251,7 +460,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === texture?.value))
         )
     ) {
-        return false;
+        const newTexture =
+            validTextures?.[crypto.randomInt(0, validTextures?.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Texture)
+                ),
+                ...(newTexture
+                    ? [
+                          {
+                              trait_type: String(LayerType.Texture),
+                              value: getAsset(
+                                  newTexture,
+                                  LayerType.Texture,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test gills
@@ -273,7 +503,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === gills?.value))
         )
     ) {
-        return false;
+        const newGills =
+            validGills?.[crypto.randomInt(0, validGills?.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Gills)
+                ),
+                ...(newGills
+                    ? [
+                          {
+                              trait_type: String(LayerType.Gills),
+                              value: getAsset(
+                                  newGills,
+                                  LayerType.Gills,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test body
@@ -295,7 +546,20 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === body?.value))
         )
     ) {
-        return false;
+        const newBody = validBodies[crypto.randomInt(validBodies.length)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Body)
+                ),
+                {
+                    trait_type: String(LayerType.Body),
+                    value: getAsset(newBody, LayerType.Body, originalLayers)
+                        .displayName,
+                },
+            ],
+        };
     }
 
     // test body spots
@@ -319,7 +583,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === bodySpots?.value))
         )
     ) {
-        return false;
+        const newBodySpots =
+            validBodySpots?.[crypto.randomInt(0, validBodySpots.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType['Body Spots'])
+                ),
+                ...(newBodySpots
+                    ? [
+                          {
+                              trait_type: String(LayerType['Body Spots']),
+                              value: getAsset(
+                                  newBodySpots,
+                                  LayerType['Body Spots'],
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test head spots
@@ -343,7 +628,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === headSpots?.value))
         )
     ) {
-        return false;
+        const newHeadSpots =
+            validHeadSpots?.[crypto.randomInt(0, validHeadSpots.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType['Head Spots'])
+                ),
+                ...(newHeadSpots
+                    ? [
+                          {
+                              trait_type: String(LayerType['Head Spots']),
+                              value: getAsset(
+                                  newHeadSpots,
+                                  LayerType['Head Spots'],
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test body gear
@@ -367,7 +673,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === bodyGear?.value))
         )
     ) {
-        return false;
+        const newBodyGear =
+            validBodyGears?.[crypto.randomInt(0, validBodyGears.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType['Body Gear'])
+                ),
+                ...(newBodyGear
+                    ? [
+                          {
+                              trait_type: String(LayerType['Body Gear']),
+                              value: getAsset(
+                                  newBodyGear,
+                                  LayerType['Body Gear'],
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test extra
@@ -389,7 +716,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === extra?.value))
         )
     ) {
-        return false;
+        const newExtra =
+            validExtras?.[crypto.randomInt(0, validExtras.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Extra)
+                ),
+                ...(newExtra
+                    ? [
+                          {
+                              trait_type: String(LayerType.Extra),
+                              value: getAsset(
+                                  newExtra,
+                                  LayerType.Extra,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test face
@@ -411,7 +759,20 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === face?.value))
         )
     ) {
-        return false;
+        const newFace = validFaces[crypto.randomInt(0, validFaces.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Face)
+                ),
+                {
+                    trait_type: String(LayerType.Face),
+                    value: getAsset(newFace, LayerType.Face, originalLayers)
+                        .displayName,
+                },
+            ],
+        };
     }
 
     // test headgear
@@ -433,7 +794,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === headgear?.value))
         )
     ) {
-        return false;
+        const newHeadgear =
+            validHeadGears?.[crypto.randomInt(0, validHeadGears.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Headgear)
+                ),
+                ...(newHeadgear
+                    ? [
+                          {
+                              trait_type: String(LayerType.Headgear),
+                              value: getAsset(
+                                  newHeadgear,
+                                  LayerType.Headgear,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test hat
@@ -455,7 +837,27 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === hat?.value))
         )
     ) {
-        return false;
+        const newHat = validHats?.[crypto.randomInt(0, validHats.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Hat)
+                ),
+                ...(newHat
+                    ? [
+                          {
+                              trait_type: String(LayerType.Hat),
+                              value: getAsset(
+                                  newHat,
+                                  LayerType.Hat,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test foreground
@@ -479,7 +881,30 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === foreground?.value))
         )
     ) {
-        return false;
+        const newForeground =
+            validForegrounds?.[
+                crypto.randomInt(0, validForegrounds.length || 1)
+            ];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType.Foreground)
+                ),
+                ...(newForeground
+                    ? [
+                          {
+                              trait_type: String(LayerType.Foreground),
+                              value: getAsset(
+                                  newForeground,
+                                  LayerType.Foreground,
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     // test hand item
@@ -503,7 +928,28 @@ const attributesInDomain = (
                     .some((vb) => vb.displayName === handItem?.value))
         )
     ) {
-        return false;
+        const newHandItem =
+            validHandItems?.[crypto.randomInt(0, validHandItems.length || 1)];
+        NFT = {
+            ...NFT,
+            attributes: [
+                ...NFT.attributes.filter(
+                    (a) => a.trait_type !== String(LayerType['Hand Item'])
+                ),
+                ...(newHandItem
+                    ? [
+                          {
+                              trait_type: String(LayerType['Hand Item']),
+                              value: getAsset(
+                                  newHandItem,
+                                  LayerType['Hand Item'],
+                                  originalLayers
+                              ).displayName,
+                          },
+                      ]
+                    : []),
+            ],
+        };
     }
 
     return NFT;
