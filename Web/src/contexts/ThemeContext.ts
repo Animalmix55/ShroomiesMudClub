@@ -69,7 +69,7 @@ const rgb = (r: number, g: number, b: number, a?: number): RGB =>
     new RGB(r, g, b, a);
 
 export const defaultTheme: ThemeContextType = {
-    fontFamily: `'Quando', serif`,
+    fontFamily: `'Open Sans', sans-serif`,
     fontColors: {
         normal: {
             primary: rgb(0, 0, 0),

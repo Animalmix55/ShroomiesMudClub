@@ -4,7 +4,6 @@ import { useHistory, useLocation } from 'react-router';
 import { useScrollSection } from 'react-scroll-section';
 import { SocialIcon } from 'react-social-icons';
 import { useStyletron } from 'styletron-react';
-import ChillBanner from '../assets/images/chill-with-jesus-banner.png';
 import { Button, ButtonType } from '../atoms/Button';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import { useThemeContext } from '../contexts/ThemeContext';
@@ -260,8 +259,7 @@ export const Header = (): JSX.Element => {
                     )}
                 >
                     <img
-                        src={ChillBanner}
-                        alt="Chill with Jesus"
+                        alt="Shroomies Mud Club"
                         className={css({
                             height: bannerMinHeight,
                             width: 'auto',

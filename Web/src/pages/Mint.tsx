@@ -5,7 +5,6 @@ import { ContractContextProvider } from '../contexts/ContractContext';
 import { MetamaskModal } from '../molecules/MetamaskModal';
 import { InvalidChainModal } from '../molecules/InvalidChainModal';
 import MintDock from '../molecules/MintDock';
-import Clouds from '../assets/images/clouds.png';
 import { MOBILE } from '../utilties/MediaQueries';
 
 export const MintPage = (): JSX.Element => {
@@ -18,7 +17,6 @@ export const MintPage = (): JSX.Element => {
                     className={css({
                         minHeight: '100vh',
                         display: 'flex',
-                        backgroundImage: `url(${Clouds})`,
                         backgroundPosition: 'center',
                         position: 'relative',
                     })}

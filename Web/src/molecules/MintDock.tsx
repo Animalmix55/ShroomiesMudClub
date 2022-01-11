@@ -9,7 +9,6 @@ import useMintDetails from '../hooks/useMintDetails';
 import useWhitelistCounts from '../hooks/useWhitelistCounts';
 import { MOBILE } from '../utilties/MediaQueries';
 import FormatTimeOffset from '../utilties/TimeFormatter';
-import Cloud from '../assets/images/cloud.png';
 
 interface SaleModuleProps {
     target: 'presale' | 'public';
@@ -63,7 +62,6 @@ export const SaleModule = (props: SaleModuleProps): JSX.Element => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexDirection: 'column',
-                backgroundImage: `url(${Cloud})`,
                 backgroundPosition: 'center',
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
