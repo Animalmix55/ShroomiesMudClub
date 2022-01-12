@@ -5,7 +5,7 @@ import {
 } from './GenerateMeta/GenerateMeta';
 import { ERC721Meta } from './GenerateMeta/Types';
 
-generateERC721Metadata(888, 'Night Shroom', undefined, true);
+generateERC721Metadata(1200, 'Night Shroom', undefined, true);
 
 // const meta = JSON.parse(
 //     fs
