@@ -37,18 +37,18 @@ const getButtonColors = (
             };
         case ButtonType.wireframe:
             return {
-                textColor: theme.fontColors.normal.primary,
-                hoveredTextColor: theme.fontColors.hovered.primary,
-                borderColor: theme.fontColors.normal.primary,
-                hoveredBorderColor: theme.fontColors.hovered.primary,
+                textColor: theme.fontColors.normal.secondary,
+                hoveredTextColor: theme.fontColors.normal.secondary,
+                borderColor: theme.fontColors.normal.secondary,
+                hoveredBorderColor: theme.fontColors.hovered.secondary,
             };
         default:
         case ButtonType.primary:
             return {
-                normal: theme.buttonColors.normal.secondary,
-                hovered: theme.buttonColors.hovered.secondary,
-                textColor: theme.fontColors.normal.secondary,
-                hoveredTextColor: theme.fontColors.hovered.secondary,
+                normal: theme.buttonColors.normal.primary,
+                hovered: theme.buttonColors.hovered.primary,
+                textColor: theme.fontColors.normal.primary,
+                hoveredTextColor: theme.fontColors.hovered.primary,
                 disabledColor: theme.buttonColors.normal.disabled,
             };
         case ButtonType.secondary:
@@ -72,7 +72,7 @@ export type ButtonProps = Omit<
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     (props: ButtonProps, ref): JSX.Element => {
-        const { buttonType } = props;
+        const { buttonType, className } = props;
         const theme = useThemeContext();
         const [css] = useStyletron();
 
@@ -94,7 +94,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 {...props}
                 className={ClassNameBuilder(
-                    props.className,
+                    className,
                     css({
                         borderColor:
                             borderColor?.getCSSColor(1) || 'transparent',

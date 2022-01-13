@@ -77,22 +77,22 @@ export const defaultTheme: ThemeContextType = {
         },
         hovered: {
             primary: rgb(32, 32, 32),
-            secondary: rgb(76, 149, 207),
+            secondary: rgb(230, 230, 230),
         },
     },
     buttonColors: {
         normal: {
-            primary: rgb(76, 149, 207),
+            primary: rgb(255, 255, 255),
             secondary: rgb(219, 174, 59),
             disabled: rgb(82, 82, 82),
         },
         hovered: {
-            primary: rgb(151, 197, 231),
+            primary: rgb(255, 255, 255),
             secondary: rgb(247, 221, 136),
             disabled: rgb(82, 82, 82),
         },
     },
-    backgroundColor: rgb(255, 255, 255),
+    backgroundColor: rgb(0, 0, 0),
     lighterBackgroundColor: rgb(108, 164, 209),
 };
 const ThemeContext = React.createContext<ThemeContextType>(defaultTheme);
