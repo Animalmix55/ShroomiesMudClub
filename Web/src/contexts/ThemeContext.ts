@@ -21,6 +21,15 @@ export interface ThemeContextType {
     };
     backgroundColor: RGB;
     lighterBackgroundColor: RGB;
+    pallette: {
+        darkBlue: RGB;
+        lightBlue: RGB;
+        darkPurple: RGB;
+        lightPurple: RGB;
+        yellow: RGB;
+        mint: RGB;
+        pink: RGB;
+    };
 }
 
 const componentToHex = (c: number): string => {
@@ -94,6 +103,15 @@ export const defaultTheme: ThemeContextType = {
     },
     backgroundColor: rgb(0, 0, 0),
     lighterBackgroundColor: rgb(108, 164, 209),
+    pallette: {
+        yellow: rgb(253, 232, 99),
+        darkBlue: rgb(0, 60, 102),
+        lightBlue: rgb(10, 194, 255),
+        darkPurple: rgb(63, 0, 115),
+        lightPurple: rgb(124, 77, 255),
+        mint: rgb(167, 252, 146),
+        pink: rgb(255, 117, 195),
+    },
 };
 const ThemeContext = React.createContext<ThemeContextType>(defaultTheme);
 
