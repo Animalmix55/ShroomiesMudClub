@@ -1,6 +1,7 @@
 import React from 'react';
 import { Section } from 'react-scroll-section';
 import Landing from './Sections/Landing';
+import MintNightShroomsSection from './Sections/MintNightShrooms';
 import NightShroomSection from './Sections/NightShrooms';
 import WelcomeSection from './Sections/Welcome';
 
@@ -15,6 +16,9 @@ export const MainPage = (): JSX.Element => {
             </Section>
             <Section id="NightShrooms">
                 <NightShroomSection />
+            </Section>
+            <Section id="MintNightShrooms">
+                <MintNightShroomsSection />
             </Section>
         </div>
     );
