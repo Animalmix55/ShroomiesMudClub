@@ -85,10 +85,8 @@ export const Footer = (): JSX.Element => {
                         src={EtherscanLogo}
                         alt="Etherscan"
                         className={css({
-                            backgroundColor: 'black',
                             height: '100%',
                             width: '100%',
-                            borderRadius: '10000px',
                         })}
                     />
                 </a>

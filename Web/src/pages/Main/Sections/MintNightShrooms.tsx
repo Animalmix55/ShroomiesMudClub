@@ -3,6 +3,7 @@ import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
 import BG from '../../../assets/images/THE NIGHT SHROOMS MINT STATS/GRASS_3-01.png';
 import { Button, ButtonType } from '../../../atoms/Button';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const MintNightShroomsSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -32,7 +33,6 @@ export const MintNightShroomsSection = (): JSX.Element => {
                 backgroundPosition: 'center',
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
-                minHeight: '100vh',
                 overflow: 'auto',
                 padding: '40px 40px 40px 40px',
                 backgroundColor: theme.pallette.darkPurple.getCSSColor(1),
@@ -52,15 +52,34 @@ export const MintNightShroomsSection = (): JSX.Element => {
                 >
                     Mint Night Shrooms
                 </Button>
-                <div className={css({ textAlign: 'center' })}>
-                    <div className={titleStyle}>Drop Count:</div>
-                    <div className={bodyStyle}>888</div>
-                    <div className={titleStyle}>Traits:</div>
-                    <div className={bodyStyle}>180+</div>
-                    <div className={titleStyle}>Trait Categories:</div>
-                    <div className={bodyStyle}>11</div>
-                    <div className={titleStyle}>Price:</div>
-                    <div className={bodyStyle}>0.03 ETH</div>
+                <div
+                    className={css({
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        [MOBILE]: {
+                            display: 'block',
+                        },
+                    })}
+                >
+                    <div className={css({ margin: '10px' })}>
+                        <div className={titleStyle}>Drop Count:</div>
+                        <div className={bodyStyle}>888</div>
+                    </div>
+                    <div className={css({ margin: '10px' })}>
+                        <div className={titleStyle}>Traits:</div>
+                        <div className={bodyStyle}>180+</div>
+                    </div>
+                    <div className={css({ margin: '10px' })}>
+                        <div className={titleStyle}>Trait Categories:</div>
+                        <div className={bodyStyle}>11</div>
+                    </div>
+                    <div className={css({ margin: '10px' })}>
+                        <div className={titleStyle}>Price:</div>
+                        <div className={bodyStyle}>0.03 ETH</div>
+                    </div>
                 </div>
             </div>
         </div>

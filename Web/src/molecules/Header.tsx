@@ -1,21 +1,14 @@
-import Hamburger from 'hamburger-react';
 import React from 'react';
-import { useHistory, useLocation } from 'react-router';
-import { useScrollSection } from 'react-scroll-section';
 import { SocialIcon } from 'react-social-icons';
 import { useStyletron } from 'styletron-react';
 import NavImage from '../assets/images/NAV/TOP_NOOB_3.png';
 import { Button, ButtonType } from '../atoms/Button';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import { useThemeContext } from '../contexts/ThemeContext';
-import useMobile from '../hooks/useMobile';
 import useScrollPosition from '../hooks/useScrollPosition';
-import { Page } from '../routing/ShroomRouter';
-import ClassNameBuilder from '../utilties/ClassNameBuilder';
 import { MOBILE } from '../utilties/MediaQueries';
 
 export const Header = (): JSX.Element => {
-    const history = useHistory();
     const [, scrollingUp] = useScrollPosition();
     const { twitterUrl, discordUrl } = useShroomieContext();
     const theme = useThemeContext();

@@ -70,8 +70,8 @@ export type ButtonProps = Omit<
     'ref'
 > & { buttonType: ButtonType };
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    (props: ButtonProps, ref): JSX.Element => {
+export const Button = React.forwardRef(
+    (props: ButtonProps, ref: React.Ref<HTMLButtonElement>): JSX.Element => {
         const { buttonType, className } = props;
         const theme = useThemeContext();
         const [css] = useStyletron();
