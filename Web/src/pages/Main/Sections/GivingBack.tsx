@@ -19,7 +19,7 @@ export const GivingBackSection = (): JSX.Element => {
         >
             <div
                 className={css({
-                    maxWidth: '1300px',
+                    maxWidth: '1000px',
                     width: '100%',
                     marginRight: 'auto',
                     marginLeft: 'auto',

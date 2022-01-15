@@ -1,5 +1,7 @@
 import React from 'react';
 import { Section } from 'react-scroll-section';
+import AboutSection from './Sections/About';
+import CheckUsOutSection from './Sections/CheckUsOut';
 import GivingBackSection from './Sections/GivingBack';
 import JoinOurCommunity from './Sections/JoinOurCommunity';
 import Landing from './Sections/Landing';
@@ -47,6 +49,12 @@ export const MainPage = (): JSX.Element => {
             </Section>
             <Section id="SupportedCauses">
                 <SupportedCausesSection />
+            </Section>
+            <Section id="CheckUsOut">
+                <CheckUsOutSection />
+            </Section>
+            <Section id="About">
+                <AboutSection />
             </Section>
         </div>
     );
