@@ -10,7 +10,7 @@ export const ShroomiesSection = (): JSX.Element => {
     return (
         <div
             className={css({
-                fontSize: '20px',
+                fontSize: '24px',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
@@ -72,6 +72,7 @@ export const ShroomiesSection = (): JSX.Element => {
                     display: 'block',
                     marginLeft: 'auto',
                     marginRight: 'auto',
+                    width: '100%',
                 })}
             />
         </div>

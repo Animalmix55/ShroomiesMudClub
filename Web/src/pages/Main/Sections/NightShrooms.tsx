@@ -10,7 +10,7 @@ export const NightShroomSection = (): JSX.Element => {
     return (
         <div
             className={css({
-                fontSize: '20px',
+                fontSize: '24px',
                 backgroundImage: `url(${BG})`,
                 backgroundPosition: 'bottom left',
                 backgroundSize: 'contain',
