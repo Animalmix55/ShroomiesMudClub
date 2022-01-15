@@ -9,6 +9,7 @@ import NightShroomSection from './Sections/NightShrooms';
 import PinheadsSection from './Sections/Pinheads';
 import RoadmapSection from './Sections/Roadmap';
 import ShroomiesSection from './Sections/Shroomies';
+import SupportedCausesSection from './Sections/SupportedCauses';
 import WelcomeSection from './Sections/Welcome';
 
 export const MainPage = (): JSX.Element => {
@@ -43,6 +44,9 @@ export const MainPage = (): JSX.Element => {
             </Section>
             <Section id="GivingBack">
                 <GivingBackSection />
+            </Section>
+            <Section id="SupportedCauses">
+                <SupportedCausesSection />
             </Section>
         </div>
     );
