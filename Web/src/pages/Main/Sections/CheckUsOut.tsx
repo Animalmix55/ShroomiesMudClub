@@ -38,6 +38,7 @@ export const CheckUsOutSection = (): JSX.Element => {
                         fontSize: '40px',
                         fontWeight: 'bold',
                         margin: '20px',
+                        textTransform: 'uppercase',
                     })}
                 >
                     Check Us Out

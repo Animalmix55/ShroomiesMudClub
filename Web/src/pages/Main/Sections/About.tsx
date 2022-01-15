@@ -25,6 +25,7 @@ export const AboutSection = (): JSX.Element => {
                         fontWeight: 'bold',
                         fontSize: '40px',
                         margin: '20px',
+                        textTransform: 'uppercase',
                     })}
                 >
                     About
