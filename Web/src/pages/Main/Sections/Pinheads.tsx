@@ -2,6 +2,7 @@ import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
 import Pinheads from '../../../assets/images/THE PINHEADS/NOOBS_TRANSPARENT.png';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const PinheadsSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -15,9 +16,12 @@ export const PinheadsSection = (): JSX.Element => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                fontSize: '24px',
                 alignItems: 'center',
                 color: theme.fontColors.normal.secondary.getCSSColor(1),
+                fontSize: '20px',
+                [MOBILE]: {
+                    fontSize: '24px',
+                },
             })}
         >
             <div

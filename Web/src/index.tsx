@@ -45,7 +45,6 @@ const {
     tokenContractAddress,
     discordUrl,
     twitterUrl,
-    instagramUrl,
     openseaUrl,
 } = { ...window } as unknown as ShroomieContextType;
 
@@ -68,7 +67,6 @@ const Root = (): JSX.Element => {
                                         tokenContractAddress,
                                         discordUrl,
                                         twitterUrl,
-                                        instagramUrl,
                                     }}
                                 >
                                     <>

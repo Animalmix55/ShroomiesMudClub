@@ -78,6 +78,9 @@ export const SupportedCausesSection = (): JSX.Element => {
                                 marginTop: 'auto',
                                 marginBottom: '20px',
                             })}
+                            onClick={(): void => {
+                                window.open('https://maps.org/');
+                            }}
                         >
                             Learn More
                         </Button>
@@ -120,6 +123,9 @@ export const SupportedCausesSection = (): JSX.Element => {
                                 marginBottom: '20px',
                             })}
                             buttonType={ButtonType.primary}
+                            onClick={(): void => {
+                                window.open('https://ffungi.org/');
+                            }}
                         >
                             Learn More
                         </Button>
@@ -162,6 +168,9 @@ export const SupportedCausesSection = (): JSX.Element => {
                                 marginTop: 'auto',
                                 marginBottom: '20px',
                             })}
+                            onClick={(): void => {
+                                window.open('https://fungi.com/');
+                            }}
                         >
                             Learn More
                         </Button>

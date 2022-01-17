@@ -7,13 +7,8 @@ import EtherscanLogo from '../assets/EtherscanLogo.svg';
 
 export const Footer = (): JSX.Element => {
     const [css] = useStyletron();
-    const {
-        twitterUrl,
-        discordUrl,
-        instagramUrl,
-        etherscanUrl,
-        tokenContractAddress,
-    } = useShroomieContext();
+    const { twitterUrl, discordUrl, etherscanUrl, tokenContractAddress } =
+        useShroomieContext();
 
     return (
         <div
@@ -23,75 +18,106 @@ export const Footer = (): JSX.Element => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 flexDirection: 'column',
+                padding: '0px 30px 150px 30px',
             })}
         >
-            <div>
-                <SocialIcon
-                    url={twitterUrl}
-                    bgColor="black"
-                    className={css({
-                        margin: '5px',
-                        height: '50px',
-                        width: '50px',
-                        [MOBILE]: {
-                            height: '80px !important',
-                            width: '80px !important',
-                        },
-                    })}
-                />
-                <SocialIcon
-                    url={discordUrl}
-                    bgColor="black"
-                    className={css({
-                        margin: '5px',
-                        height: '50px',
-                        width: '50px',
-                        [MOBILE]: {
-                            height: '80px !important',
-                            width: '80px !important',
-                        },
-                    })}
-                />
-                <SocialIcon
-                    url={instagramUrl}
-                    bgColor="black"
-                    className={css({
-                        margin: '5px',
-                        height: '50px',
-                        width: '50px',
-                        [MOBILE]: {
-                            height: '80px !important',
-                            width: '80px !important',
-                        },
-                    })}
-                />
-                <a
-                    href={`${etherscanUrl}/address/${tokenContractAddress}`}
-                    className={css({
-                        display: 'inline-block',
-                        width: '50px',
-                        margin: '5px',
-                        height: '50px',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        verticalAlign: 'middle',
-                        [MOBILE]: {
-                            height: '80px !important',
-                            width: '80px !important',
-                        },
-                    })}
-                >
-                    <img
-                        src={EtherscanLogo}
-                        alt="Etherscan"
+            <div
+                className={css({
+                    maxWidth: '600px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                })}
+            >
+                <div className={css({ margin: '15px' })}>
+                    <SocialIcon
+                        url={twitterUrl}
+                        bgColor="black"
                         className={css({
-                            height: '100%',
-                            width: '100%',
+                            margin: '5px',
+                            height: '50px',
+                            width: '50px',
+                            [MOBILE]: {
+                                height: '80px !important',
+                                width: '80px !important',
+                            },
                         })}
                     />
-                </a>
+                    <SocialIcon
+                        url={discordUrl}
+                        bgColor="black"
+                        className={css({
+                            margin: '5px',
+                            height: '50px',
+                            width: '50px',
+                            [MOBILE]: {
+                                height: '80px !important',
+                                width: '80px !important',
+                            },
+                        })}
+                    />
+                    {tokenContractAddress && (
+                        <a
+                            href={`${etherscanUrl}/address/${tokenContractAddress}`}
+                            className={css({
+                                display: 'inline-block',
+                                width: '50px',
+                                margin: '5px',
+                                height: '50px',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                verticalAlign: 'middle',
+                                [MOBILE]: {
+                                    height: '80px !important',
+                                    width: '80px !important',
+                                },
+                            })}
+                        >
+                            <img
+                                src={EtherscanLogo}
+                                alt="Etherscan"
+                                className={css({
+                                    height: '100%',
+                                    width: '100%',
+                                })}
+                            />
+                        </a>
+                    )}
+                </div>
+                <div
+                    className={css({
+                        textAlign: 'center',
+                        margin: '15px',
+                        fontSize: '15px',
+                    })}
+                >
+                    Each Shroomie is a unique artwork, programmatically
+                    generated from more than 300 traits. Our core group of
+                    Shroomies are based on real-world mushrooms, some edible,
+                    some magical, some medicinal and some poisonous, but ALL
+                    extraordinary - and some more extraordinary than others.
+                    Hold on, you’re going on an fantastic trip.
+                </div>
+                <div
+                    className={css({
+                        textAlign: 'center',
+                        margin: '7px',
+                        fontWeight: 'bold',
+                    })}
+                >
+                    ©2021 Shroomies Mud Club - All Rights Reserved
+                </div>
+                <div className={css({ textAlign: 'center', margin: '7px' })}>
+                    <a
+                        href="mailto:info@shroomiesmudclub.io"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        info@shroomiesmudclub.io
+                    </a>
+                </div>
             </div>
-            <div>The Chill With Jesus. All Rights Reserved.</div>
         </div>
     );
 };

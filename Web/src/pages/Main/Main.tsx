@@ -1,7 +1,7 @@
 import React from 'react';
 import { Section } from 'react-scroll-section';
-import AboutSection from './Sections/About';
 import CheckUsOutSection from './Sections/CheckUsOut';
+import FAQSection from './Sections/FAQ';
 import GivingBackSection from './Sections/GivingBack';
 import JoinOurCommunity from './Sections/JoinOurCommunity';
 import Landing from './Sections/Landing';
@@ -18,47 +18,47 @@ import WelcomeSection from './Sections/Welcome';
 export const MainPage = (): JSX.Element => {
     return (
         <div>
-            <Section id="Landing">
+            <Section meta="Home" id="Landing">
                 <Landing />
             </Section>
-            <Section id="Welcome">
+            <Section meta="Welcome" id="Welcome">
                 <WelcomeSection />
             </Section>
-            <Section id="NightShrooms">
+            <Section meta="Night Shrooms" id="NightShrooms">
                 <NightShroomSection />
             </Section>
-            <Section id="MintNightShrooms">
+            <Section meta="Mint Night Shrooms" id="MintNightShrooms">
                 <MintNightShroomsSection />
             </Section>
-            <Section id="JoinOurCommunity">
+            <Section meta="Join Our Community" id="JoinOurCommunity">
                 <JoinOurCommunity />
             </Section>
-            <Section id="Shroomies">
+            <Section meta="Shroomies" id="Shroomies">
                 <ShroomiesSection />
             </Section>
-            <Section id="MintShroomies">
+            <Section meta="Mint Shroomies" id="MintShroomies">
                 <MintShroomiesSection />
             </Section>
-            <Section id="Roadmap">
+            <Section meta="Roadmap" id="Roadmap">
                 <RoadmapSection />
             </Section>
-            <Section id="Pinheads">
+            <Section meta="Pinheads" id="Pinheads">
                 <PinheadsSection />
             </Section>
-            <Section id="GivingBack">
+            <Section meta="Giving Back" id="GivingBack">
                 <GivingBackSection />
             </Section>
-            <Section id="SupportedCauses">
+            <Section meta="Supported Causes" id="SupportedCauses">
                 <SupportedCausesSection />
             </Section>
-            <Section id="CheckUsOut">
+            <Section meta="Check Us Out" id="CheckUsOut">
                 <CheckUsOutSection />
             </Section>
-            <Section id="About">
-                <AboutSection />
-            </Section>
-            <Section id="Team">
+            <Section meta="Team" id="Team">
                 <OurTeamSection />
+            </Section>
+            <Section meta="FAQ" id="FAQ">
+                <FAQSection />
             </Section>
         </div>
     );

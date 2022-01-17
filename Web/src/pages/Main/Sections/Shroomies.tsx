@@ -2,6 +2,7 @@ import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
 import Shroomies from '../../../assets/images/SHROOMIES/SHROOMIE_MAIN_IMG4.png';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const ShroomiesSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -10,7 +11,6 @@ export const ShroomiesSection = (): JSX.Element => {
     return (
         <div
             className={css({
-                fontSize: '24px',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
@@ -19,6 +19,10 @@ export const ShroomiesSection = (): JSX.Element => {
                 backgroundColor: theme.pallette.lightBlue.getCSSColor(1),
                 color: theme.fontColors.normal.secondary.getCSSColor(1),
                 paddingBottom: '40vw',
+                fontSize: '20px',
+                [MOBILE]: {
+                    fontSize: '24px',
+                },
             })}
         >
             <div

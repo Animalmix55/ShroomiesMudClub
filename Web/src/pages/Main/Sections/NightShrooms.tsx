@@ -2,6 +2,7 @@ import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
 import BG from '../../../assets/images/THE NIGHT SHROOMS/GLOW_MAIN_4.jpg';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const NightShroomSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -10,7 +11,6 @@ export const NightShroomSection = (): JSX.Element => {
     return (
         <div
             className={css({
-                fontSize: '24px',
                 backgroundImage: `url(${BG})`,
                 backgroundPosition: 'bottom left',
                 backgroundSize: 'contain',
@@ -23,6 +23,10 @@ export const NightShroomSection = (): JSX.Element => {
                 backgroundColor: theme.pallette.darkPurple.getCSSColor(1),
                 color: theme.fontColors.normal.secondary.getCSSColor(1),
                 paddingBottom: '40vw',
+                fontSize: '20px',
+                [MOBILE]: {
+                    fontSize: '24px',
+                },
             })}
         >
             <div

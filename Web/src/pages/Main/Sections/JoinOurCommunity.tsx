@@ -26,7 +26,10 @@ export const JoinOurCommunity = (): JSX.Element => {
                     maxWidth: '800px',
                     marginLeft: 'auto',
                     marginRight: 'auto',
-                    fontSize: '24px',
+                    fontSize: '20px',
+                    [MOBILE]: {
+                        fontSize: '24px',
+                    },
                 })}
             >
                 <div

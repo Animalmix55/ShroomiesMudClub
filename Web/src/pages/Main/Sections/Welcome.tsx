@@ -12,11 +12,14 @@ export const WelcomeSection = (): JSX.Element => {
         <div
             className={css({
                 backgroundColor: theme.pallette.yellow.getCSSColor(1),
-                fontSize: '24px',
                 padding: '30px 50px 30px 50px',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                fontSize: '20px',
+                [MOBILE]: {
+                    fontSize: '24px',
+                },
             })}
         >
             <div
@@ -38,7 +41,7 @@ export const WelcomeSection = (): JSX.Element => {
                         minWidth: '230px',
                         minHeight: '260px',
                         height: '20vw',
-                        maxHeight: '300px',
+                        maxHeight: '0px',
                         maxWidth: '264px',
                         width: 'auto',
                         [MOBILE]: {

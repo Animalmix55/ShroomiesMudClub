@@ -1,4 +1,6 @@
+import { Callout, Icon } from '@fluentui/react';
 import React from 'react';
+import { useScrollSections } from 'react-scroll-section';
 import { SocialIcon } from 'react-social-icons';
 import { useStyletron } from 'styletron-react';
 import NavImage from '../assets/images/NAV/TOP_NOOB_3.png';
@@ -6,7 +8,80 @@ import { Button, ButtonType } from '../atoms/Button';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import { useThemeContext } from '../contexts/ThemeContext';
 import useScrollPosition from '../hooks/useScrollPosition';
+import ClassNameBuilder from '../utilties/ClassNameBuilder';
 import { MOBILE } from '../utilties/MediaQueries';
+
+const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
+    const [css] = useStyletron();
+    const [open, setOpen] = React.useState(false);
+    const theme = useThemeContext();
+
+    const ref = React.useRef<HTMLButtonElement>(null);
+
+    const sections = useScrollSections();
+    const buttons = sections.map((s) => (
+        <Button
+            className={css({
+                display: 'block',
+                color: s.selected
+                    ? `${theme.fontColors.normal.secondary.getCSSColor(
+                          1
+                      )} !important`
+                    : undefined,
+                backgroundColor: s.selected
+                    ? `${theme.pallette.lightPurple.getCSSColor(1)} !important`
+                    : undefined,
+                borderRadius: '10px',
+                margin: '5px',
+            })}
+            key={s.id}
+            buttonType={ButtonType.primary}
+            onClick={s.onClick}
+        >
+            {s.meta}
+        </Button>
+    ));
+
+    return (
+        <>
+            <Button
+                buttonType={ButtonType.wireframe}
+                className={ClassNameBuilder(
+                    className,
+                    css({
+                        borderRadius: '1000px',
+                        height: '35px',
+                        transition: 'transform 500ms',
+                        ':hover': {
+                            transform: 'scale(1.1)',
+                        },
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    })
+                )}
+                onClick={(): void => setOpen((o) => !o)}
+                ref={ref}
+            >
+                <Icon iconName={open ? 'ChevronUpMed' : 'ChevronDownMed'} />
+            </Button>
+            {open && (
+                <Callout
+                    target={ref}
+                    styles={{
+                        calloutMain: {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'stretch',
+                        },
+                    }}
+                >
+                    {buttons}
+                </Callout>
+            )}
+        </>
+    );
+};
 
 export const Header = (): JSX.Element => {
     const [, scrollingUp] = useScrollPosition();
@@ -109,6 +184,7 @@ export const Header = (): JSX.Element => {
                     Magic Mint
                 </div>
             </Button>
+            <NavDropdown className={css({ margin: '5px' })} />
         </div>
     );
 };

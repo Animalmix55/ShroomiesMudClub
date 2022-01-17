@@ -9,7 +9,6 @@ export interface ShroomieContextType {
     twitterUrl: string;
     etherscanUrl: string;
     openseaUrl: string;
-    instagramUrl: string;
 }
 
 const ShroomieContext = React.createContext<ShroomieContextType>({
@@ -20,7 +19,6 @@ const ShroomieContext = React.createContext<ShroomieContextType>({
     discordUrl: '',
     twitterUrl: '',
     openseaUrl: '',
-    instagramUrl: '',
 });
 
 export const useShroomieContext = (): ShroomieContextType =>

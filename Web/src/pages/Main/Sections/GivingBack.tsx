@@ -23,7 +23,10 @@ export const GivingBackSection = (): JSX.Element => {
                     width: '100%',
                     marginRight: 'auto',
                     marginLeft: 'auto',
-                    fontSize: '24px',
+                    fontSize: '20px',
+                    [MOBILE]: {
+                        fontSize: '24px',
+                    },
                 })}
             >
                 <div
