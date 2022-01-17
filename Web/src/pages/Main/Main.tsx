@@ -8,6 +8,7 @@ import Landing from './Sections/Landing';
 import MintNightShroomsSection from './Sections/MintNightShrooms';
 import MintShroomiesSection from './Sections/MintShroomies';
 import NightShroomSection from './Sections/NightShrooms';
+import OurTeamSection from './Sections/OurTeam';
 import PinheadsSection from './Sections/Pinheads';
 import RoadmapSection from './Sections/Roadmap';
 import ShroomiesSection from './Sections/Shroomies';
@@ -55,6 +56,9 @@ export const MainPage = (): JSX.Element => {
             </Section>
             <Section id="About">
                 <AboutSection />
+            </Section>
+            <Section id="Team">
+                <OurTeamSection />
             </Section>
         </div>
     );

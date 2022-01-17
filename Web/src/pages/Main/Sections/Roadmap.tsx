@@ -1,7 +1,9 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
-import Roadmap from '../../../assets/images/ROADMAP/ROADMAP V5-01.png';
+import Roadmap from '../../../assets/images/ROADMAP/ROADMAP_Revised_Linear.png';
+import RoadmapMobile from '../../../assets/images/ROADMAP/ROADMAP_mobile_v2transp-01.png';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const RoadmapSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -33,8 +35,24 @@ export const RoadmapSection = (): JSX.Element => {
                     width: '100%',
                     maxWidth: '1000px',
                     height: 'auto',
+                    [MOBILE]: {
+                        display: 'none',
+                    },
                 })}
                 src={Roadmap}
+                alt="Roadmap"
+            />
+            <img
+                className={css({
+                    width: '100%',
+                    maxWidth: '1000px',
+                    height: 'auto',
+                    display: 'none',
+                    [MOBILE]: {
+                        display: 'initial',
+                    },
+                })}
+                src={RoadmapMobile}
                 alt="Roadmap"
             />
         </div>
