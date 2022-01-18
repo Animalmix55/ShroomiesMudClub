@@ -26,6 +26,7 @@ export interface ThemeContextType {
         lightBlue: RGB;
         darkPurple: RGB;
         lightPurple: RGB;
+        gradientBlue: RGB;
         yellow: RGB;
         mint: RGB;
         pink: RGB;
@@ -105,6 +106,7 @@ export const defaultTheme: ThemeContextType = {
     lighterBackgroundColor: rgb(108, 164, 209),
     pallette: {
         yellow: rgb(253, 232, 99),
+        gradientBlue: rgb(26, 118, 251),
         darkBlue: rgb(0, 60, 102),
         lightBlue: rgb(10, 194, 255),
         darkPurple: rgb(63, 0, 115),

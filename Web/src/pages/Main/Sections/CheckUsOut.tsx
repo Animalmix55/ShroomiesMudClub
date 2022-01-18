@@ -52,13 +52,13 @@ export const CheckUsOutSection = (): JSX.Element => {
                         maxWidth: '1000px',
                     })}
                 >
-                    <img src={Shroom1} alt="Shroom" className={imageClass} />
                     <img src={Shroom2} alt="Shroom" className={imageClass} />
-                    <img src={Shroom3} alt="Shroom" className={imageClass} />
+                    <img src={Shroom7} alt="Shroom" className={imageClass} />
                     <img src={Shroom4} alt="Shroom" className={imageClass} />
+                    <img src={Shroom3} alt="Shroom" className={imageClass} />
                     <img src={Shroom5} alt="Shroom" className={imageClass} />
                     <img src={Shroom6} alt="Shroom" className={imageClass} />
-                    <img src={Shroom7} alt="Shroom" className={imageClass} />
+                    <img src={Shroom1} alt="Shroom" className={imageClass} />
                     <img src={Shroom8} alt="Shroom" className={imageClass} />
                 </div>
             </div>

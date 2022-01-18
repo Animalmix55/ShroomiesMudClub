@@ -14,6 +14,7 @@ export const WelcomeSection = (): JSX.Element => {
                 backgroundColor: theme.pallette.yellow.getCSSColor(1),
                 padding: '30px 50px 30px 50px',
                 display: 'flex',
+                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
                 fontSize: '20px',
@@ -24,12 +25,23 @@ export const WelcomeSection = (): JSX.Element => {
         >
             <div
                 className={css({
+                    margin: '30px',
+                    fontSize: '40px',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
+                })}
+            >
+                Welcome
+            </div>
+            <div
+                className={css({
                     display: 'flex',
                     justifyContent: 'center',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     [MOBILE]: {
                         maxWidth: 'unset !important',
-                        display: 'block',
+                        flexDirection: 'column-reverse',
                     },
                 })}
             >
@@ -38,16 +50,15 @@ export const WelcomeSection = (): JSX.Element => {
                     alt="Shroom GIF"
                     className={css({
                         margin: '20px',
-                        minWidth: '230px',
-                        minHeight: '260px',
-                        height: '20vw',
-                        maxHeight: '0px',
-                        maxWidth: '264px',
+                        height: '400px',
                         width: 'auto',
                         [MOBILE]: {
                             display: 'block',
                             marginLeft: 'auto',
                             marginRight: 'auto',
+                            height: 'auto',
+                            width: '100%',
+                            maxWidth: '500px',
                         },
                     })}
                 />

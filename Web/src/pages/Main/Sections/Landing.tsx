@@ -2,6 +2,7 @@ import React from 'react';
 import { useStyletron } from 'styletron-react';
 import BG from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES.jpg';
 import { useThemeContext } from '../../../contexts/ThemeContext';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const Landing = (): JSX.Element => {
     const [css] = useStyletron();
@@ -16,6 +17,13 @@ export const Landing = (): JSX.Element => {
                 minHeight: '100vh',
                 backgroundRepeat: 'no-repeat',
                 overflow: 'auto',
+                backgroundColor: theme.pallette.gradientBlue.getCSSColor(1),
+                [MOBILE]: {
+                    backgroundPosition: 'bottom center',
+                    backgroundSize: 'contain',
+                    display: 'flex',
+                    alignItems: 'center',
+                },
             })}
         >
             <div
@@ -26,6 +34,10 @@ export const Landing = (): JSX.Element => {
                     color: theme.fontColors.normal.secondary.getCSSColor(1),
                     fontSize: '80px',
                     textTransform: 'uppercase',
+                    [MOBILE]: {
+                        fontSize: '50px',
+                        marginTop: 'unset',
+                    },
                 })}
             >
                 <div className={css({ textAlign: 'center' })}>Shroomies</div>

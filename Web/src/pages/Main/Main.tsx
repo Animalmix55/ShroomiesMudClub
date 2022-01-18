@@ -2,14 +2,12 @@ import React from 'react';
 import { Section } from 'react-scroll-section';
 import CheckUsOutSection from './Sections/CheckUsOut';
 import FAQSection from './Sections/FAQ';
-import GivingBackSection from './Sections/GivingBack';
 import JoinOurCommunity from './Sections/JoinOurCommunity';
 import Landing from './Sections/Landing';
 import MintNightShroomsSection from './Sections/MintNightShrooms';
 import MintShroomiesSection from './Sections/MintShroomies';
 import NightShroomSection from './Sections/NightShrooms';
 import OurTeamSection from './Sections/OurTeam';
-import PinheadsSection from './Sections/Pinheads';
 import RoadmapSection from './Sections/Roadmap';
 import ShroomiesSection from './Sections/Shroomies';
 import SupportedCausesSection from './Sections/SupportedCauses';
@@ -41,12 +39,6 @@ export const MainPage = (): JSX.Element => {
             </Section>
             <Section meta="Roadmap" id="Roadmap">
                 <RoadmapSection />
-            </Section>
-            <Section meta="Pinheads" id="Pinheads">
-                <PinheadsSection />
-            </Section>
-            <Section meta="Giving Back" id="GivingBack">
-                <GivingBackSection />
             </Section>
             <Section meta="Supported Causes" id="SupportedCauses">
                 <SupportedCausesSection />

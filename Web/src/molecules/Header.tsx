@@ -16,7 +16,12 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
     const [open, setOpen] = React.useState(false);
     const theme = useThemeContext();
 
+    const [scrollPos] = useScrollPosition();
     const ref = React.useRef<HTMLButtonElement>(null);
+
+    React.useEffect(() => {
+        setOpen(false);
+    }, [scrollPos]);
 
     const sections = useScrollSections();
     const buttons = sections.map((s) => (
@@ -33,6 +38,10 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                     : undefined,
                 borderRadius: '10px',
                 margin: '5px',
+                [MOBILE]: {
+                    height: `${70 / sections.length}vh`,
+                    width: '50vw',
+                },
             })}
             key={s.id}
             buttonType={ButtonType.primary}
@@ -130,6 +139,9 @@ export const Header = (): JSX.Element => {
                     transition: 'transform 500ms',
                     ':hover': {
                         transform: 'scale(1.1)',
+                    },
+                    [MOBILE]: {
+                        display: 'none !important',
                     },
                 })}
             />

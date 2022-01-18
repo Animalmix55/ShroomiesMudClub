@@ -18,7 +18,6 @@ export const ShroomiesSection = (): JSX.Element => {
                 padding: '40px',
                 backgroundColor: theme.pallette.lightBlue.getCSSColor(1),
                 color: theme.fontColors.normal.secondary.getCSSColor(1),
-                paddingBottom: '40vw',
                 fontSize: '20px',
                 [MOBILE]: {
                     fontSize: '24px',
@@ -38,9 +37,9 @@ export const ShroomiesSection = (): JSX.Element => {
             >
                 <div
                     className={css({
-                        margin: '30px',
-                        fontSize: '40px',
-                        fontWeight: 'bold',
+                        margin: '30px 0px 30px 0px',
+                        fontSize: '45px',
+                        fontWeight: '900',
                         textTransform: 'uppercase',
                         textAlign: 'center',
                     })}
@@ -72,11 +71,12 @@ export const ShroomiesSection = (): JSX.Element => {
                 src={Shroomies}
                 alt="Shroomies"
                 className={css({
-                    maxWidth: '1200px',
+                    maxWidth: '800px',
                     display: 'block',
                     marginLeft: 'auto',
                     marginRight: 'auto',
                     width: '100%',
+                    height: 'auto',
                 })}
             />
         </div>

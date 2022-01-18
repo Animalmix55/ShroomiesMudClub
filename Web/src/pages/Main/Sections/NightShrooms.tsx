@@ -11,18 +11,13 @@ export const NightShroomSection = (): JSX.Element => {
     return (
         <div
             className={css({
-                backgroundImage: `url(${BG})`,
-                backgroundPosition: 'bottom left',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                padding: '40px 40px 150px 40px',
+                padding: '40px',
                 backgroundColor: theme.pallette.darkPurple.getCSSColor(1),
                 color: theme.fontColors.normal.secondary.getCSSColor(1),
-                paddingBottom: '40vw',
                 fontSize: '20px',
                 [MOBILE]: {
                     fontSize: '24px',
@@ -39,14 +34,11 @@ export const NightShroomSection = (): JSX.Element => {
                     alignItems: 'center',
                 })}
             >
-                <div className={css({ maxWidth: '700px', width: '100%' })}>
-                    Introducing...
-                </div>
                 <div
                     className={css({
-                        margin: '30px',
-                        fontSize: '40px',
-                        fontWeight: 'bold',
+                        margin: '30px 0px 30px 0px',
+                        fontSize: '45px',
+                        fontWeight: '900',
                         textTransform: 'uppercase',
                         textAlign: 'center',
                     })}
@@ -87,6 +79,20 @@ export const NightShroomSection = (): JSX.Element => {
                     </ul>
                 </div>
             </div>
+            <img
+                src={BG}
+                alt="Night Shrooms"
+                className={css({
+                    width: '100%',
+                    maxWidth: '800px',
+                    height: 'auto',
+                    display: 'block',
+                    marginRight: 'auto',
+                    marginLeft: 'auto',
+                    left: '0px',
+                    right: '0px',
+                })}
+            />
         </div>
     );
 };

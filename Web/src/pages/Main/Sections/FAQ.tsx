@@ -2,6 +2,7 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
+import { MOBILE } from '../../../utilties/MediaQueries';
 
 interface FAQItem {
     title: string;
@@ -110,6 +111,10 @@ export const FAQSection = (): JSX.Element => {
                                 margin: '5px 20px 5px 20px',
                                 flex: '1',
                                 minWidth: '510px',
+                                [MOBILE]: {
+                                    minWidth: 'unset',
+                                    flexBasis: '100%',
+                                },
                             })}
                         >
                             <FAQItemElement section={s} index={i} />
