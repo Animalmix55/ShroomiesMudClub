@@ -79,20 +79,27 @@ export const NightShroomSection = (): JSX.Element => {
                     </ul>
                 </div>
             </div>
-            <img
-                src={BG}
-                alt="Night Shrooms"
+            <div
                 className={css({
                     width: '100%',
+                    overflow: 'hidden',
                     maxWidth: '800px',
-                    height: 'auto',
-                    display: 'block',
                     marginRight: 'auto',
                     marginLeft: 'auto',
                     left: '0px',
                     right: '0px',
                 })}
-            />
+            >
+                <img
+                    src={BG}
+                    alt="Night Shrooms"
+                    className={css({
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                    })}
+                />
+            </div>
         </div>
     );
 };

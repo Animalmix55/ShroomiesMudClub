@@ -67,18 +67,27 @@ export const ShroomiesSection = (): JSX.Element => {
                     talking, and sometimes roguish little mushrooms.
                 </div>
             </div>
-            <img
-                src={Shroomies}
-                alt="Shroomies"
+            <div
                 className={css({
-                    maxWidth: '800px',
-                    display: 'block',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
                     width: '100%',
-                    height: 'auto',
+                    overflow: 'hidden',
+                    maxWidth: '800px',
+                    marginRight: 'auto',
+                    marginLeft: 'auto',
+                    left: '0px',
+                    right: '0px',
                 })}
-            />
+            >
+                <img
+                    src={Shroomies}
+                    alt="Shroomies"
+                    className={css({
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                    })}
+                />
+            </div>
         </div>
     );
 };

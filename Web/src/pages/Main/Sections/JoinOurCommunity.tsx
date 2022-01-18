@@ -89,8 +89,8 @@ export const JoinOurCommunity = (): JSX.Element => {
                         className={css({
                             margin: '5px',
                             [MOBILE]: {
-                                height: '100px !important',
-                                width: '100px !important',
+                                height: '70px !important',
+                                width: '70px !important',
                             },
                         })}
                     />
@@ -100,8 +100,8 @@ export const JoinOurCommunity = (): JSX.Element => {
                         className={css({
                             margin: '5px',
                             [MOBILE]: {
-                                height: '100px !important',
-                                width: '100px !important',
+                                height: '70px !important',
+                                width: '70px !important',
                             },
                         })}
                     />
@@ -115,8 +115,8 @@ export const JoinOurCommunity = (): JSX.Element => {
                                 margin: '5px',
                                 display: 'block',
                                 [MOBILE]: {
-                                    height: '100px !important',
-                                    width: '100px !important',
+                                    height: '70px !important',
+                                    width: '70px !important',
                                 },
                             })}
                         >

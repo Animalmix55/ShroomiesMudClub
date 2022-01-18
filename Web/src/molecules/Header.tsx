@@ -38,9 +38,10 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                     : undefined,
                 borderRadius: '10px',
                 margin: '5px',
+                padding: '0px 10px 0px 10px !important',
                 [MOBILE]: {
-                    height: `${70 / sections.length}vh`,
-                    width: '50vw',
+                    minHeight: `${60 / sections.length}vh`,
+                    minWidth: '50vw',
                 },
             })}
             key={s.id}
@@ -60,6 +61,7 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                     css({
                         borderRadius: '1000px',
                         height: '35px',
+                        width: '35px',
                         transition: 'transform 500ms',
                         ':hover': {
                             transform: 'scale(1.1)',
@@ -67,6 +69,7 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        padding: '0px !important',
                     })
                 )}
                 onClick={(): void => setOpen((o) => !o)}
@@ -156,6 +159,9 @@ export const Header = (): JSX.Element => {
                     ':hover': {
                         transform: 'scale(1.1)',
                     },
+                    [MOBILE]: {
+                        display: 'none !important',
+                    },
                 })}
             />
             <Button
@@ -165,6 +171,7 @@ export const Header = (): JSX.Element => {
                     margin: '5px',
                     height: '35px',
                     transition: 'transform 500ms',
+                    padding: '0px 10px 0px 10px !important',
                     ':hover': {
                         transform: 'scale(1.1)',
                     },
