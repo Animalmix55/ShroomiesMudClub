@@ -41,6 +41,7 @@ const getButtonColors = (
                 hoveredTextColor: theme.fontColors.normal.secondary,
                 borderColor: theme.fontColors.normal.secondary,
                 hoveredBorderColor: theme.fontColors.hovered.secondary,
+                disabledColor: theme.fontColors.normal.secondary,
             };
         default:
         case ButtonType.primary:
@@ -119,7 +120,9 @@ export const Button = React.forwardRef(
                         },
                         ':disabled': {
                             backgroundColor:
-                                disabledColor?.getCSSColor(1) || 'transparent',
+                                (buttonType !== ButtonType.wireframe &&
+                                    disabledColor?.getCSSColor(1)) ||
+                                'transparent',
                             borderColor:
                                 disabledColor?.getCSSColor(1) || 'transparent',
                             color: textColor?.getCSSColor(0.7) || 'transparent',

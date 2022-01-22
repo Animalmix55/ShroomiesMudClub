@@ -28,11 +28,11 @@ const FAQItems: FAQItem[] = [
     },
     {
         title: 'How many NFT’s are in each drop?',
-        body: `First, we will release 888 Night Shrooms. Then, we will have the main drop of the 8,888 Shroomies. Subsequent releases will consist of Special Drops. numbers are TBD.`,
+        body: `First, we will release 888 Night Shrooms. Then, we will have our main drop of 8000 Shroomies.`,
     },
     {
         title: 'How much do these NFT’s cost?',
-        body: `The Night Shrooms will drop at .03 ETH. The Shroomies drop price is TBD.`,
+        body: `The Night Shrooms will drop at 0.038 ETH. The Shroomies drop price is 0.048 ETH.`,
     },
     {
         title: 'How do we get our Shroomies?',

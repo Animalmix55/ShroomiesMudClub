@@ -117,7 +117,7 @@ export const OurTeamSection = (): JSX.Element => {
                         <img
                             src={Justin}
                             className={css({ width: '100%', height: 'auto' })}
-                            alt="SPOTTED ACTUAL"
+                            alt="LOOKS LEGIT"
                         />
                         <div
                             className={css({
@@ -127,13 +127,13 @@ export const OurTeamSection = (): JSX.Element => {
                                 marginBottom: '20px',
                             })}
                         >
-                            SPOTTED ACTUAL
+                            LOOKS LEGIT
                         </div>
                         <div className={css({ marginBottom: '20px' })}>
-                            We need words about Justin to go here. Something
-                            that outlines in a fun way his contribution to our
-                            fantastic team. This is where that text needs to go.
-                            And the blurb should be this long.
+                            All things marketing and making meaningful
+                            connections in real-life and the metaverse. Husband
+                            and father of a little girl and Rhodesian Ridgeback
+                            dog. Find me hiking or camping to recharge.
                         </div>
                     </div>
                     <div

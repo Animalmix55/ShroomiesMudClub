@@ -96,7 +96,7 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
 };
 
 export const Header = (): JSX.Element => {
-    const [, scrollingUp] = useScrollPosition();
+    const [scrollPos, scrollingUp] = useScrollPosition();
     const { twitterUrl, discordUrl } = useShroomieContext();
     const theme = useThemeContext();
 
@@ -113,12 +113,18 @@ export const Header = (): JSX.Element => {
                 paddingRight: '30px',
                 paddingLeft: '30px',
                 transition: '500ms transform, 500ms background',
-                transform: !scrollingUp ? 'translateY(-100px)' : undefined,
+                transform:
+                    !scrollingUp && scrollPos >= 100
+                        ? 'translateY(-100px)'
+                        : undefined,
                 display: 'flex',
                 alignItems: 'center',
                 [MOBILE]: {
                     height: '10vh',
-                    transform: !scrollingUp ? 'translateY(-10vh)' : undefined,
+                    transform:
+                        !scrollingUp && scrollPos >= 100
+                            ? 'translateY(-10vh)'
+                            : undefined,
                     backgroundColor: theme.backgroundColor.getCSSColor(0.5),
                 },
             })}
@@ -176,6 +182,7 @@ export const Header = (): JSX.Element => {
                         transform: 'scale(1.1)',
                     },
                 })}
+                disabled
             >
                 <div
                     className={css({

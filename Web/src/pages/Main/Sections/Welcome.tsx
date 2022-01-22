@@ -25,17 +25,6 @@ export const WelcomeSection = (): JSX.Element => {
         >
             <div
                 className={css({
-                    margin: '30px',
-                    fontSize: '40px',
-                    fontWeight: 'bold',
-                    textTransform: 'uppercase',
-                    textAlign: 'center',
-                })}
-            >
-                Welcome
-            </div>
-            <div
-                className={css({
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -71,11 +60,14 @@ export const WelcomeSection = (): JSX.Element => {
                     })}
                 >
                     <div>
-                        Welcome to the <b>Shroomies Mud Club</b>. You are a
-                        forager in this experimental metaverse of mushroom mojo.
-                        Here you find curiously evolving troops of unearthed
-                        magical, edible, walking, talking, and sometimes roguish
-                        little mushrooms.
+                        Welcome to the <b>Shroomies Mud Club</b>
+                    </div>
+                    <br />
+                    <div>
+                        You are a forager in this experimental metaverse of
+                        mushroom mojo. Here you find curiously evolving troops
+                        of unearthed magical, edible, walking, talking, and
+                        sometimes roguish little mushrooms.
                     </div>
                     <br />
                     <div>

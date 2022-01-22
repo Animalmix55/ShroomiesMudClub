@@ -35,9 +35,9 @@ export const JoinOurCommunity = (): JSX.Element => {
                 <div
                     className={css({
                         textAlign: 'center',
-                        fontSize: '40px',
+                        fontSize: '45px',
                         margin: '30px',
-                        fontWeight: 'bold',
+                        fontWeight: '900',
                         textTransform: 'uppercase',
                     })}
                 >

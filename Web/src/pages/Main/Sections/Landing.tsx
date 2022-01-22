@@ -1,7 +1,9 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
-import BG from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES.jpg';
+import BG from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES_v2.jpg';
+import MobileImage from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES_MOBILE.png';
 import { useThemeContext } from '../../../contexts/ThemeContext';
+import Title from '../../../assets/images/LANDING/SMC_MAIN_TITLE.png';
 import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const Landing = (): JSX.Element => {
@@ -19,29 +21,53 @@ export const Landing = (): JSX.Element => {
                 overflow: 'auto',
                 backgroundColor: theme.pallette.gradientBlue.getCSSColor(1),
                 [MOBILE]: {
-                    backgroundPosition: 'bottom center',
-                    backgroundSize: 'contain',
+                    backgroundImage: 'unset',
+                    background: `linear-gradient(360deg, ${theme.pallette.lightPurple.getCSSColor(
+                        1
+                    )} 0%, ${theme.pallette.gradientBlue.getCSSColor(
+                        1
+                    )} 100%);`,
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                 },
             })}
         >
             <div
                 className={css({
-                    marginTop: '15vh',
+                    margin: '15vh auto 0px auto',
+                    maxWidth: '900px',
+                    padding: '40px',
+                })}
+            >
+                <img
+                    src={Title}
+                    alt="Shroomies Mud Club"
+                    className={css({
+                        width: '100%',
+                        height: 'auto',
+                    })}
+                />
+            </div>
+            <div
+                className={css({
+                    maxWidth: '1000px',
                     width: '100%',
-                    fontWeight: 'bold',
-                    color: theme.fontColors.normal.secondary.getCSSColor(1),
-                    fontSize: '80px',
-                    textTransform: 'uppercase',
+                    marginTop: 'auto',
+                    display: 'none',
                     [MOBILE]: {
-                        fontSize: '50px',
-                        marginTop: 'unset',
+                        display: 'block',
                     },
                 })}
             >
-                <div className={css({ textAlign: 'center' })}>Shroomies</div>
-                <div className={css({ textAlign: 'center' })}>Mud Club</div>
+                <img
+                    src={MobileImage}
+                    alt="Some Shroomies"
+                    className={css({
+                        width: '100%',
+                        height: 'auto',
+                    })}
+                />
             </div>
         </div>
     );

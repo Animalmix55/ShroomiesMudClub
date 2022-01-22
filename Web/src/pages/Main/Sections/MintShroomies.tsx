@@ -47,8 +47,10 @@ export const MintShroomiesSection = (): JSX.Element => {
                         marginRight: 'auto',
                         borderRadius: '10000px',
                         display: 'block',
+                        textTransform: 'uppercase',
                     })}
                     buttonType={ButtonType.primary}
+                    disabled
                 >
                     Mint Shroomies
                 </Button>
