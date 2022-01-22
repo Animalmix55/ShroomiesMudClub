@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
-import BG from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES_v2.jpg';
+import Image from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES.jpg';
 import MobileImage from '../../../assets/images/LANDING/MAIN_IMG_TOP_SHROOMIES_MOBILE.png';
 import { useThemeContext } from '../../../contexts/ThemeContext';
 import Title from '../../../assets/images/LANDING/SMC_MAIN_TITLE.png';
@@ -13,24 +13,15 @@ export const Landing = (): JSX.Element => {
     return (
         <div
             className={css({
-                backgroundImage: `url(${BG})`,
-                backgroundPosition: 'center',
-                backgroundSize: 'cover',
                 minHeight: '100vh',
-                backgroundRepeat: 'no-repeat',
                 overflow: 'auto',
                 backgroundColor: theme.pallette.gradientBlue.getCSSColor(1),
-                [MOBILE]: {
-                    backgroundImage: 'unset',
-                    background: `linear-gradient(360deg, ${theme.pallette.lightPurple.getCSSColor(
-                        1
-                    )} 0%, ${theme.pallette.gradientBlue.getCSSColor(
-                        1
-                    )} 100%);`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                },
+                background: `linear-gradient(360deg, ${theme.pallette.lightPurple.getCSSColor(
+                    1
+                )} 0%, ${theme.pallette.gradientBlue.getCSSColor(1)} 100%);`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
             })}
         >
             <div
@@ -54,16 +45,28 @@ export const Landing = (): JSX.Element => {
                     maxWidth: '1000px',
                     width: '100%',
                     marginTop: 'auto',
-                    display: 'none',
-                    [MOBILE]: {
-                        display: 'block',
-                    },
                 })}
             >
+                <img
+                    src={Image}
+                    alt="Some Shroomies"
+                    className={css({
+                        display: 'block',
+                        [MOBILE]: {
+                            display: 'none',
+                        },
+                        width: '100%',
+                        height: 'auto',
+                    })}
+                />
                 <img
                     src={MobileImage}
                     alt="Some Shroomies"
                     className={css({
+                        display: 'none',
+                        [MOBILE]: {
+                            display: 'block',
+                        },
                         width: '100%',
                         height: 'auto',
                     })}
