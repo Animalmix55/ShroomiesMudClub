@@ -18,7 +18,7 @@ export const Landing = (): JSX.Element => {
                 backgroundColor: theme.pallette.gradientBlue.getCSSColor(1),
                 background: `linear-gradient(360deg, ${theme.pallette.lightPurple.getCSSColor(
                     1
-                )} 0%, ${theme.pallette.gradientBlue.getCSSColor(1)} 100%);`,
+                )} 35%, ${theme.pallette.gradientBlue.getCSSColor(1)} 100%);`,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
