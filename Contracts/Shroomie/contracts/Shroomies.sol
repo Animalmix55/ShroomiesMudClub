@@ -261,8 +261,11 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             for (uint16 j = 1; j <= amount; j++) {
                 _mint(target, lastMinted + j);
             }
+
+            lastMinted += amount;
         }
 
+        totalSupply += transactionQuantity;
         if (_mainCollection) mainMinted = localMinted;
         else secondaryMinted = localMinted;
     }

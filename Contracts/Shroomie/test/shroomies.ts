@@ -157,8 +157,7 @@ contract('Shroomies Mud Club', (accounts) => {
     const now = 1;
     const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
-    const { shroomiesInstance } 
-      = await getShroomiesInstance(now, later, now);
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
 
     await truffleAssert.fails(
       shroomiesInstance.batchMintUpdate(100, 100, 100, 100, 100, { from: accounts[1] }) // bad acct
@@ -239,7 +238,7 @@ contract('Shroomies Mud Club', (accounts) => {
     )
   });
 
-  it.only('calls ownerMintTo (succeeds, mints appropriate ids)', async () => {
+  it('calls ownerMintTo (succeeds, mints appropriate ids/updates counts)', async () => {
     const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
     const mainSupply = 5;
@@ -265,6 +264,64 @@ contract('Shroomies Mud Club', (accounts) => {
     assert.equal((await shroomiesInstance.balanceOf(accounts[4])).toString(), '2');
     assert.equal((await shroomiesInstance.ownerOf(3)), accounts[4]);
     assert.equal((await shroomiesInstance.ownerOf(4)), accounts[4]);
+    
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), '8');
+    assert.equal((await shroomiesInstance.mainMinted()).toString(), '4');
+    assert.equal((await shroomiesInstance.secondaryMinted()).toString(), '4');
+  });
+
+  it('calls ownerMintTo (with multiple addresses)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
+    await shroomiesInstance.ownerMintTo([2, 3, 4], [accounts[0], accounts[1], accounts[2]], false);
+
+    assert.equal((await shroomiesInstance.balanceOf(accounts[0])).toString(), '2');
+    assert.equal((await shroomiesInstance.balanceOf(accounts[1])).toString(), '3');
+    assert.equal((await shroomiesInstance.balanceOf(accounts[2])).toString(), '4');
+
+    // ids for account 1
+    assert.equal((await shroomiesInstance.ownerOf(1)), accounts[0]);
+    assert.equal((await shroomiesInstance.ownerOf(2)), accounts[0]);
+
+    // ids for account 2
+    assert.equal((await shroomiesInstance.ownerOf(3)), accounts[1]);
+    assert.equal((await shroomiesInstance.ownerOf(4)), accounts[1]);
+    assert.equal((await shroomiesInstance.ownerOf(5)), accounts[1]);
+
+    // ids for account 3
+    assert.equal((await shroomiesInstance.ownerOf(6)), accounts[2]);
+    assert.equal((await shroomiesInstance.ownerOf(7)), accounts[2]);
+    assert.equal((await shroomiesInstance.ownerOf(8)), accounts[2]);
+    assert.equal((await shroomiesInstance.ownerOf(9)), accounts[2]);
+  });
+
+  it('calls burn (and reduces totalSupply)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
+    await shroomiesInstance.ownerMintTo([10], [accounts[0]], false);
+
+    assert.equal((await shroomiesInstance.balanceOf(accounts[0])).toString(), '10');
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), '10');
+
+    await shroomiesInstance.burn(1);
+    assert.equal((await shroomiesInstance.balanceOf(accounts[0])).toString(), '9');
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), '9');
+
+    await shroomiesInstance.burn(2);
+    assert.equal((await shroomiesInstance.balanceOf(accounts[0])).toString(), '8');
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), '8');
+
+    await truffleAssert.fails(
+      shroomiesInstance.burn(2) // already burned
+    );
+
+    await truffleAssert.fails(
+      shroomiesInstance.burn(3, { from: accounts[1] }) // not owned
+    );
   });
 
   it('withdraws', async () => {
