@@ -11,10 +11,10 @@ import "./Signer.sol";
 contract Shroomies is ERC721, Ownable, ReentrancyGuard {
     using Strings for uint256;
     /**
-    * To please Etherscan, 
-    * totalSupply is actually the current supply.
-    * @dev reduces when tokens are burnt
-    */
+     * To please Etherscan,
+     * totalSupply is actually the current supply.
+     * @dev reduces when tokens are burnt
+     */
     uint256 public totalSupply;
     /**
      * The maximum supply to be minted, after which
@@ -167,7 +167,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         secondaryBaseURI = _uri;
     }
 
-     /**
+    /**
      * Allows the contract owner to update the signer used for presale mints.
      * @param _signer the signer's address
      * @dev onlyOwner
@@ -183,10 +183,10 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * @param _endDate - the end date for that mint in UNIX seconds
      * @dev onlyOwner
      */
-    function updateWhitelistMint(
-        uint256 _startDate,
-        uint256 _endDate
-    ) public onlyOwner {
+    function updateWhitelistMint(uint256 _startDate, uint256 _endDate)
+        public
+        onlyOwner
+    {
         whitelistMint.startDate = _startDate;
         whitelistMint.endDate = _endDate;
     }
@@ -198,34 +198,43 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * @param _startDate - the start date for that mint in UNIX seconds
      * @dev onlyOwner
      */
-    function updatePublicMint(
-        uint16 _maxPerTransaction,
-        uint256 _startDate
-    ) public onlyOwner {
+    function updatePublicMint(uint16 _maxPerTransaction, uint256 _startDate)
+        public
+        onlyOwner
+    {
         publicMint.maxPerTransaction = _maxPerTransaction;
         publicMint.startDate = _startDate;
     }
 
-    /** 
-    * Allows the owner of the contract to update the mint price
-    * @dev onlyOwner
-    */
-    function updateMintPrice(
-        uint256 _price
-    ) public onlyOwner {
+    /**
+     * Allows the owner of the contract to update the mint price
+     * @dev onlyOwner
+     */
+    function updateMintPrice(uint256 _price) public onlyOwner {
         mintPrice = _price;
     }
 
-    /** 
-    * Updates the current active mint, whether secondary (false) or main (true).
-    * @dev onlyOwner
-    */
-    function updateMainCollectionMinting(
-        bool _mainCollectionMinting
-    ) public onlyOwner {
+    /**
+     * Updates the current active mint, whether secondary (false) or main (true).
+     * @dev onlyOwner
+     */
+    function updateMainCollectionMinting(bool _mainCollectionMinting)
+        public
+        onlyOwner
+    {
         mainCollectionMinting = _mainCollectionMinting;
     }
 
+    /**
+     * Updates all of the information needed for switching sub collections.
+     * @dev onlyOwner
+     * @param _publicMaxPerTransaction - the public transaction max.
+     * @param _publicStartDate - the public start date in unix seconds.
+     * @param _wlStartDate - the whitelist start date in unix seconds.
+     * @param _wlEndDate - the end date of the whitelist in unix seconds.
+     * @param _price - the price of the mint.
+     * @param _mainCollectionMinting - a bool indicating if the main collection or secondary is minting.
+     */
     function batchMintUpdate(
         uint16 _publicMaxPerTransaction,
         uint256 _publicStartDate,
@@ -240,6 +249,12 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         updateMainCollectionMinting(_mainCollectionMinting);
     }
 
+    /**
+     * A helpful owner-only function to allow minting to specific wallets in bulk.
+     * @param _amounts - an array of mint amounts
+     * @param _addresses - a parallel array to _amounts containing target addresses for each amount.
+     * @param _mainCollection - indicated if the mint is on the main collection (true) or secondary (false).
+     */
     function ownerMintTo(
         uint16[] calldata _amounts,
         address[] calldata _addresses,
@@ -260,7 +275,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             remaining = maxSupply - mainCollectionSize - lastMinted;
             localMinted = lastMinted;
         }
-        
+
         for (uint16 i; i < _amounts.length; i++) {
             uint16 amount = _amounts[i];
             address target = _addresses[i];
@@ -301,14 +316,34 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * Retreives the URI for the given token. The main and secondary collections have different base URIs.
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
 
         uint256 mainCollectionStart = maxSupply - mainCollectionSize + 1;
-        if (tokenId >= mainCollectionStart) return bytes(mainBaseURI).length > 0 ? string(abi.encodePacked(mainBaseURI, tokenId.toString())) : "";
-        return bytes(secondaryBaseURI).length > 0 ? string(abi.encodePacked(secondaryBaseURI, tokenId.toString())) : "";
+        if (tokenId >= mainCollectionStart)
+            return
+                bytes(mainBaseURI).length > 0
+                    ? string(abi.encodePacked(mainBaseURI, tokenId.toString()))
+                    : "";
+        return
+            bytes(secondaryBaseURI).length > 0
+                ? string(abi.encodePacked(secondaryBaseURI, tokenId.toString()))
+                : "";
     }
 
+    /**
+     * Gets the number of mints on each (main and secondary) whitelists already completed.
+     * @param _user - the user about which to query mints.
+     */
     function getWhitelistMints(address _user)
         external
         view
@@ -317,6 +352,13 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         return whitelistMint.minted[_user];
     }
 
+    /**
+     * Gets a hash to sign for preminting.
+     * @param _minter - the minter for the desired mint.
+     * @param _quantity - the quantity to mint.
+     * @param _mainCollection - if the mint will be main (true) or secondary (false).
+     * @param _nonce - the nonce to use for this transaction (> last).
+     */
     function getPremintHash(
         address _minter,
         uint16 _quantity,
@@ -324,7 +366,12 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         uint16 _nonce
     ) public pure returns (bytes32) {
         return
-            VerifySignature.getMessageHash(_minter, _quantity, _mainCollection, _nonce);
+            VerifySignature.getMessageHash(
+                _minter,
+                _quantity,
+                _mainCollection,
+                _nonce
+            );
     }
 
     /**
@@ -378,7 +425,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             secondaryMinted += _quantity;
             whitelistMint.minted[msg.sender].secondaryCollection += _quantity;
         }
-        
+
         require(remaining > 0, "Mint over");
         require(_quantity <= remaining, "Not enough");
 
@@ -418,10 +465,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         require(_quantity <= remaining, "Not enough");
         require(block.timestamp >= publicMint.startDate, "No mint");
         require(_quantity <= publicMint.maxPerTransaction, "Exceeds max");
-        require(
-            _quantity * mintPrice == msg.value,
-            "Invalid value"
-        );
+        require(_quantity * mintPrice == msg.value, "Invalid value");
 
         // DISTRIBUTE THE TOKENS
         totalSupply += _quantity;
