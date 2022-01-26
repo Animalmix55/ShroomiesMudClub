@@ -1,11 +1,11 @@
 import React from 'react';
 import tokenAbi from '../assets/NightShroomAbi.json';
-import { NightShroom } from '../models/NightShroom';
+import { Shroomies } from '../models/Shroomies';
 import { useShroomieContext } from './ShroomieContext';
 import useWeb3 from './Web3Context';
 
 export interface ContractContextType {
-    tokenContract?: NightShroom;
+    tokenContract?: Shroomies;
 }
 
 const ContractContext = React.createContext<ContractContextType>({});
@@ -28,7 +28,7 @@ export const ContractContextProvider = ({
         const token = new web3.eth.Contract(
             tokenAbi as never,
             tokenContractAddress
-        ) as unknown as NightShroom;
+        ) as unknown as Shroomies;
         return token;
     }, [tokenContractAddress, web3]);
 

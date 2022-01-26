@@ -5,7 +5,6 @@ interface PresaleMintDetails {
     startDate: number;
     endDate: number;
     totalMinted: number;
-    maxMinted: number;
 }
 
 interface PublicDetails {
@@ -31,7 +30,6 @@ export function useMintDetails(
         startDate: Infinity,
         endDate: Infinity,
         totalMinted: 0,
-        maxMinted: 0,
         maxPerTransaction: 0,
     });
 
@@ -40,16 +38,15 @@ export function useMintDetails(
 
         if (sale === 'presale') {
             contract.methods
-                .presaleMint()
+                .whitelistMint()
                 .call()
                 .then((fm) => {
-                    const { startDate, endDate, totalMinted, maxMinted } = fm;
+                    const { startDate, endDate, totalMinted } = fm;
                     setDetails({
                         maxPerTransaction: 0,
                         startDate: Number(startDate),
                         endDate: Number(endDate),
                         totalMinted: Number(totalMinted),
-                        maxMinted: Number(maxMinted),
                     });
                 });
 
@@ -66,7 +63,6 @@ export function useMintDetails(
                     maxPerTransaction: Number(maxPerTransaction),
                     endDate: 0,
                     totalMinted: 0,
-                    maxMinted: 0,
                 });
             });
     }, [contract, sale]);

@@ -1,14 +1,14 @@
 import BigDecimal from 'js-big-decimal';
 import React from 'react';
 import { BASE, ZERO } from '../utilties/Numbers';
-import { NightShroom } from '../models/NightShroom';
+import { Shroomies } from '../models/Shroomies';
 
 /**
  * Gets mint price for the given token
  * @param token the token to get the balance of
  * @returns a bigdecimal
  */
-export function useMintPrice(token?: NightShroom): BigDecimal {
+export function useMintPrice(token?: Shroomies): BigDecimal {
     const [mintPrice, setMintPrice] = React.useState<BigDecimal>(ZERO);
 
     const refresh = React.useCallback(() => {

@@ -4,8 +4,8 @@ import { Web3ContextProvider } from '../contexts/Web3Context';
 import { ContractContextProvider } from '../contexts/ContractContext';
 import { MetamaskModal } from '../molecules/MetamaskModal';
 import { InvalidChainModal } from '../molecules/InvalidChainModal';
-import MintDock from '../molecules/MintDock';
 import { MOBILE } from '../utilties/MediaQueries';
+import BG from '../assets/images/MAGIC MINT/GRASS_3-01.png';
 
 export const MintPage = (): JSX.Element => {
     const [css] = useStyletron();
@@ -19,6 +19,8 @@ export const MintPage = (): JSX.Element => {
                         display: 'flex',
                         backgroundPosition: 'center',
                         position: 'relative',
+                        backgroundImage: `url(${BG})`,
+                        backgroundSize: 'cover',
                     })}
                 >
                     <div
@@ -37,7 +39,6 @@ export const MintPage = (): JSX.Element => {
                     >
                         <InvalidChainModal />
                         <MetamaskModal />
-                        <MintDock />
                     </div>
                 </div>
             </ContractContextProvider>

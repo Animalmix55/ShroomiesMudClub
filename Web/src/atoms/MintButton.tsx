@@ -8,7 +8,7 @@ import { useContractContext } from '../contexts/ContractContext';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import useWeb3 from '../contexts/Web3Context';
 import useMintPrice from '../hooks/useMintPrice';
-import { NightShroom } from '../models/NightShroom';
+import { Shroomies } from '../models/Shroomies';
 import ClassNameBuilder from '../utilties/ClassNameBuilder';
 import { BASE, roundAndDisplay, ZERO } from '../utilties/Numbers';
 import { ButtonType } from './Button';
@@ -18,13 +18,14 @@ export const WeiToEth = (wei: number): number => wei / 1000000000000000000;
 
 interface MintButtonProps {
     sale: 'presale' | 'public';
+    mainMint: boolean;
     amount: number;
     className?: string;
     disabled?: boolean;
     onTransact?: (val: PromiEvent<TransactionReceipt>) => void;
 }
 export const MintButton = (props: MintButtonProps): JSX.Element => {
-    const { sale, amount, onTransact, className, disabled } = props;
+    const { sale, amount, onTransact, className, disabled, mainMint } = props;
 
     const [css] = useStyletron();
     const { tokenContract: contract } = useContractContext();
@@ -39,7 +40,7 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
     const { api } = useShroomieContext();
 
     const getPremintParams = React.useCallback(async (): Promise<
-        Parameters<NightShroom['methods']['premint']>
+        Parameters<Shroomies['methods']['premint']>
     > => {
         if (!contract) throw new Error('No contract');
         if (!accounts[0]) throw new Error('Not logged in');
@@ -50,8 +51,8 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
             accounts[0]
         );
 
-        return [amount, nonce, signature];
-    }, [accounts, amount, api, contract]);
+        return [amount, mainMint, nonce, signature];
+    }, [accounts, amount, api, contract, mainMint]);
 
     if (sale === 'public') {
         return (

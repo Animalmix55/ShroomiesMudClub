@@ -13,8 +13,8 @@ export const Landing = (): JSX.Element => {
     return (
         <div
             className={css({
-                minHeight: '100vh',
-                overflow: 'auto',
+                height: '100vh',
+                overflow: 'hidden',
                 backgroundColor: theme.pallette.gradientBlue.getCSSColor(1),
                 background: `linear-gradient(360deg, ${theme.pallette.lightPurple.getCSSColor(
                     1
@@ -24,11 +24,19 @@ export const Landing = (): JSX.Element => {
                 alignItems: 'center',
             })}
         >
+            <div className={css({ minHeight: '100px' })} />
             <div
                 className={css({
-                    margin: '15vh auto 0px auto',
-                    maxWidth: '900px',
-                    padding: '40px',
+                    flex: '1',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '775px',
+                    padding: '30px',
+                    boxSizing: 'border-box',
+                    [MOBILE]: {
+                        width: '90%',
+                    },
                 })}
             >
                 <img
@@ -42,9 +50,8 @@ export const Landing = (): JSX.Element => {
             </div>
             <div
                 className={css({
-                    maxWidth: '1000px',
+                    maxWidth: '1400px',
                     width: '100%',
-                    marginTop: 'auto',
                 })}
             >
                 <img

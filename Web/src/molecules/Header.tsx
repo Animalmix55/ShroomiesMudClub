@@ -1,5 +1,6 @@
 import { Callout, Icon } from '@fluentui/react';
 import React from 'react';
+import { useHistory, useLocation } from 'react-router';
 import { useScrollSections } from 'react-scroll-section';
 import { SocialIcon } from 'react-social-icons';
 import { useStyletron } from 'styletron-react';
@@ -8,6 +9,7 @@ import { Button, ButtonType } from '../atoms/Button';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import { useThemeContext } from '../contexts/ThemeContext';
 import useScrollPosition from '../hooks/useScrollPosition';
+import { Page } from '../routing/ShroomRouter';
 import ClassNameBuilder from '../utilties/ClassNameBuilder';
 import { MOBILE } from '../utilties/MediaQueries';
 
@@ -18,6 +20,8 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
 
     const [scrollPos] = useScrollPosition();
     const ref = React.useRef<HTMLButtonElement>(null);
+    const history = useHistory();
+    const location = useLocation();
 
     React.useEffect(() => {
         setOpen(false);
@@ -88,7 +92,25 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                         },
                     }}
                 >
-                    {buttons}
+                    {location.pathname === Page.Main && buttons}
+                    {location.pathname !== Page.Main && (
+                        <Button
+                            className={css({
+                                display: 'block',
+                                borderRadius: '10px',
+                                margin: '5px',
+                                padding: '0px 10px 0px 10px !important',
+                                [MOBILE]: {
+                                    minHeight: `${60 / sections.length}vh`,
+                                    minWidth: '50vw',
+                                },
+                            })}
+                            buttonType={ButtonType.primary}
+                            onClick={(): void => history.push(Page.Main)}
+                        >
+                            Go Home
+                        </Button>
+                    )}
                 </Callout>
             )}
         </>
@@ -101,6 +123,7 @@ export const Header = (): JSX.Element => {
     const theme = useThemeContext();
 
     const [css] = useStyletron();
+    const history = useHistory();
 
     return (
         <div
@@ -119,6 +142,7 @@ export const Header = (): JSX.Element => {
                         : undefined,
                 display: 'flex',
                 alignItems: 'center',
+                zIndex: 1000,
                 [MOBILE]: {
                     height: '10vh',
                     transform:
@@ -182,7 +206,7 @@ export const Header = (): JSX.Element => {
                         transform: 'scale(1.1)',
                     },
                 })}
-                disabled
+                onClick={(): void => history.push(Page.Mint)}
             >
                 <div
                     className={css({
