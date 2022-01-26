@@ -216,16 +216,28 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         mintPrice = _price;
     }
 
+    /** 
+    * Updates the current active mint, whether secondary (false) or main (true).
+    * @dev onlyOwner
+    */
+    function updateMainCollectionMinting(
+        bool _mainCollectionMinting
+    ) public onlyOwner {
+        mainCollectionMinting = _mainCollectionMinting;
+    }
+
     function batchMintUpdate(
         uint16 _publicMaxPerTransaction,
         uint256 _publicStartDate,
         uint256 _wlStartDate,
         uint256 _wlEndDate,
-        uint256 _price
+        uint256 _price,
+        bool _mainCollectionMinting
     ) external onlyOwner {
         updateMintPrice(_price);
         updatePublicMint(_publicMaxPerTransaction, _publicStartDate);
         updateWhitelistMint(_wlStartDate, _wlEndDate);
+        updateMainCollectionMinting(_mainCollectionMinting);
     }
 
     function ownerMintTo(

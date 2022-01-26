@@ -1,3 +1,5 @@
+import { ShroomiesInstance } from "../types/truffle-contracts";
+
 const truffleAssert = require('truffle-assertions');
 const Shroomies = artifacts.require("Shroomies");
 const Signer = artifacts.require("VerifySignature");
@@ -20,6 +22,13 @@ const getShroomiesInstance = async (wlStart: number, wlEnd: number, publicStart:
   const shroomiesInstance = await Shroomies.new(supply, mainSupply, publicTransMax, mintPrice, signerAddress, wlStart, wlEnd, publicStart);
 
   return { shroomiesInstance, signatureVerifierInstance, signer, mintPrice, publicTransMax, supply, mainSupply };
+}
+
+const getSignedMessage = (contract: ShroomiesInstance, signer: ReturnType<Web3['eth']['accounts']['create']>) => async (transaction: MintTransaction) => {
+  const { mainCollection, minter, quantity, nonce } = transaction;
+
+  const messageHash = await contract.getPremintHash(minter, quantity, mainCollection, nonce);
+  return signer.sign(messageHash);
 }
 
 contract('Shroomies Mud Club', (accounts) => {
@@ -153,6 +162,19 @@ contract('Shroomies Mud Club', (accounts) => {
     assert.equal((await shroomiesInstance.mintPrice()).toString(), '100');
   });
 
+  it('calls updateMainCollectionMinting', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
+
+    assert.equal(await shroomiesInstance.mainCollectionMinting(), false);
+
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    assert.equal(await shroomiesInstance.mainCollectionMinting(), true);
+  });
+
   it('calls batchMintUpdate', async () => {
     const now = 1;
     const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
@@ -160,20 +182,22 @@ contract('Shroomies Mud Club', (accounts) => {
     const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
 
     await truffleAssert.fails(
-      shroomiesInstance.batchMintUpdate(100, 100, 100, 100, 100, { from: accounts[1] }) // bad acct
+      shroomiesInstance.batchMintUpdate(100, 100, 100, 100, 100, true, { from: accounts[1] }) // bad acct
     );
 
-    await shroomiesInstance.batchMintUpdate(100, 100, 100, 100, 100);
+    await shroomiesInstance.batchMintUpdate(100, 100, 100, 100, 100, true);
 
     const mintPrice = await shroomiesInstance.mintPrice();
     const pubMint = await shroomiesInstance.publicMint();
     const wlMint = await shroomiesInstance.whitelistMint();
+    const mainCollectionMinting = await shroomiesInstance.mainCollectionMinting();
 
     assert.equal(mintPrice.toString(), '100');
     assert.equal(pubMint[0].toString(), '100');
     assert.equal(pubMint[1].toString(), '100');
     assert.equal(wlMint[0].toString(), '100');
     assert.equal(wlMint[1].toString(), '100');
+    assert.ok(mainCollectionMinting);
   });
 
   it('calls ownerMintTo (fails with bad sender)', async () => {
@@ -321,6 +345,340 @@ contract('Shroomies Mud Club', (accounts) => {
 
     await truffleAssert.fails(
       shroomiesInstance.burn(3, { from: accounts[1] }) // not owned
+    );
+  });
+
+  it('calls tokenURI (gets appropriate response for main versus secondary)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now, 1, 10, 8888, 8000);
+
+    await shroomiesInstance.setMainBaseURI('main/');
+    await shroomiesInstance.setSecondaryBaseURI('secondary/');
+    await shroomiesInstance.ownerMintTo([10], [accounts[0]], false);
+    await shroomiesInstance.ownerMintTo([10], [accounts[0]], true);
+
+    assert.equal(await shroomiesInstance.tokenURI(1), 'secondary/1');
+    assert.equal(await shroomiesInstance.tokenURI(889), `main/889`);
+  });
+
+  it('calls getWhitelistMints (tracks the appropriate values)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const mainMintTransaction: MintTransaction = {
+      quantity: 10,
+      nonce: 2,
+      minter: accounts[1],
+      mainCollection: true,
+    }
+    const secondaryMintTransaction: MintTransaction = { ...mainMintTransaction, mainCollection: false, nonce: 1 };
+
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).mainCollection.toString(), '0');
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).secondaryCollection.toString(), '0');
+
+    await shroomiesInstance.premint(
+      secondaryMintTransaction.quantity,
+      secondaryMintTransaction.mainCollection,
+      secondaryMintTransaction.nonce,
+      (await signTransaction(secondaryMintTransaction)).signature,
+      { from: secondaryMintTransaction.minter, value: (mintPrice * secondaryMintTransaction.quantity).toString() }
+    );
+
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).mainCollection.toString(), '0');
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).secondaryCollection.toString(), secondaryMintTransaction.quantity.toString());
+
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    await shroomiesInstance.premint(
+      mainMintTransaction.quantity,
+      mainMintTransaction.mainCollection,
+      mainMintTransaction.nonce,
+      (await signTransaction(mainMintTransaction)).signature,
+      { from: mainMintTransaction.minter, value: (mintPrice * mainMintTransaction.quantity).toString() }
+    );
+
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).mainCollection.toString(), mainMintTransaction.quantity.toString());
+    assert.equal((await shroomiesInstance.getWhitelistMints(accounts[1])).secondaryCollection.toString(), secondaryMintTransaction.quantity.toString());
+  });
+
+  it('calls getPremintHash', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, signatureVerifierInstance } = await getShroomiesInstance(now, later, now);
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+
+    const transaction: MintTransaction = {
+      nonce: 1,
+      minter: accounts[1],
+      quantity: 1,
+      mainCollection: false,
+    };
+
+    const signature = (await signTransaction(transaction)).signature;
+    const isValid = await signatureVerifierInstance.verify(
+      signer.address,
+      transaction.minter,
+      transaction.quantity,
+      transaction.mainCollection,
+      transaction.nonce,
+      signature
+    );
+
+    assert.ok(isValid);
+  });
+
+  it('calls premint (fails due to invalid sig)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 10,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    // wrong sender
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: accounts[2], value: String(mintPrice * secondaryMintTransaction.quantity) } // bad sender
+      ),
+    );
+
+    // bad quantity
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity + 1, // bad quantity
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+
+    // bad main collection flag
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        !secondaryMintTransaction.mainCollection, // bad flag
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+
+    // bad nonce
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection, 
+        secondaryMintTransaction.nonce + 1, // bad nonce
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to zero quantity)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 0, // zero quantity
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity, // zero quantity
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to reused nonce)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 10,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    await shroomiesInstance.premint(
+      secondaryMintTransaction.quantity, // zero quantity
+      secondaryMintTransaction.mainCollection,
+      secondaryMintTransaction.nonce,
+      signature.signature,
+      { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+    ),
+
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to inactive mint)', async () => {
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(later, later + 100000, later);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 10,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to bad value)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 10,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity - 1) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to sellout)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction1: MintTransaction = {
+      quantity: 5,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature1 = await signTransaction(secondaryMintTransaction1);
+
+    // mint 5/5
+    await shroomiesInstance.premint(
+      secondaryMintTransaction1.quantity,
+      secondaryMintTransaction1.mainCollection,
+      secondaryMintTransaction1.nonce,
+      signature1.signature,
+      { from: secondaryMintTransaction1.minter, value: String(mintPrice * secondaryMintTransaction1.quantity) }
+    );
+
+    const secondaryMintTransaction2: MintTransaction = {
+      quantity: 1,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature2 = await signTransaction(secondaryMintTransaction1);
+    // zero left
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction2.quantity,
+        secondaryMintTransaction2.mainCollection,
+        secondaryMintTransaction2.nonce,
+        signature2.signature,
+        { from: secondaryMintTransaction2.minter, value: String(mintPrice * secondaryMintTransaction2.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to exceeding supply)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 8, // only 5 available
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const signature = await signTransaction(secondaryMintTransaction);
+
+    // zero left
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        secondaryMintTransaction.quantity,
+        secondaryMintTransaction.mainCollection,
+        secondaryMintTransaction.nonce,
+        signature.signature,
+        { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+      ),
     );
   });
 
