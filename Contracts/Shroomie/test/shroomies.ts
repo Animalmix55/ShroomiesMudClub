@@ -609,7 +609,7 @@ contract('Shroomies Mud Club', (accounts) => {
     );
   });
 
-  it('calls premint (fails due to sellout)', async () => {
+  it('calls premint (fails due to sellout secondary)', async () => {
     const now = 1;
     const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
@@ -636,12 +636,12 @@ contract('Shroomies Mud Club', (accounts) => {
 
     const secondaryMintTransaction2: MintTransaction = {
       quantity: 1,
-      nonce: 1,
+      nonce: 2,
       minter: accounts[1],
       mainCollection: false,
     }
 
-    const signature2 = await signTransaction(secondaryMintTransaction1);
+    const signature2 = await signTransaction(secondaryMintTransaction2);
     // zero left
     await truffleAssert.fails(
       shroomiesInstance.premint(
@@ -654,7 +654,53 @@ contract('Shroomies Mud Club', (accounts) => {
     );
   });
 
-  it('calls premint (fails due to exceeding supply)', async () => {
+  it('calls premint (fails due to sellout main)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const mainMintTransaction1: MintTransaction = {
+      quantity: 5,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: true,
+    }
+
+    const signature1 = await signTransaction(mainMintTransaction1);
+
+    // mint 5/5
+    await shroomiesInstance.premint(
+      mainMintTransaction1.quantity,
+      mainMintTransaction1.mainCollection,
+      mainMintTransaction1.nonce,
+      signature1.signature,
+      { from: mainMintTransaction1.minter, value: String(mintPrice * mainMintTransaction1.quantity) }
+    );
+
+    const mainMintTransaction2: MintTransaction = {
+      quantity: 1,
+      nonce: 2,
+      minter: accounts[1],
+      mainCollection: true,
+    }
+
+    const signature2 = await signTransaction(mainMintTransaction2);
+    // zero left
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        mainMintTransaction2.quantity,
+        mainMintTransaction2.mainCollection,
+        mainMintTransaction2.nonce,
+        signature2.signature,
+        { from: mainMintTransaction2.minter, value: String(mintPrice * mainMintTransaction2.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (fails due to exceeding supply secondary)', async () => {
     const now = 1;
     const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
@@ -670,7 +716,6 @@ contract('Shroomies Mud Club', (accounts) => {
 
     const signature = await signTransaction(secondaryMintTransaction);
 
-    // zero left
     await truffleAssert.fails(
       shroomiesInstance.premint(
         secondaryMintTransaction.quantity,
@@ -681,6 +726,225 @@ contract('Shroomies Mud Club', (accounts) => {
       ),
     );
   });
+
+  it('calls premint (fails due to exceeding supply main)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+    const mainMintTransaction: MintTransaction = {
+      quantity: 8, // only 5 available
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: true,
+    }
+
+    const signature = await signTransaction(mainMintTransaction);
+
+    await truffleAssert.fails(
+      shroomiesInstance.premint(
+        mainMintTransaction.quantity,
+        mainMintTransaction.mainCollection,
+        mainMintTransaction.nonce,
+        signature.signature,
+        { from: mainMintTransaction.minter, value: String(mintPrice * mainMintTransaction.quantity) }
+      ),
+    );
+  });
+
+  it('calls premint (succeeds and increases counts)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, signer, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    const signTransaction = getSignedMessage(shroomiesInstance, signer);
+
+    const secondaryMintTransaction: MintTransaction = {
+      quantity: 8,
+      nonce: 1,
+      minter: accounts[1],
+      mainCollection: false,
+    }
+
+    const mainMintTransaction: MintTransaction = {
+      quantity: 8,
+      nonce: 2,
+      minter: accounts[1],
+      mainCollection: true,
+    }
+
+    const secondarySignature = await signTransaction(secondaryMintTransaction);
+    const mainSignature = await signTransaction(mainMintTransaction);
+
+    await shroomiesInstance.premint(
+      secondaryMintTransaction.quantity,
+      secondaryMintTransaction.mainCollection,
+      secondaryMintTransaction.nonce,
+      secondarySignature.signature,
+      { from: secondaryMintTransaction.minter, value: String(mintPrice * secondaryMintTransaction.quantity) }
+    );
+
+    assert.equal((await shroomiesInstance.secondaryMinted()).toString(), secondaryMintTransaction.quantity.toString());
+    assert.equal((await shroomiesInstance.mainMinted()).toString(), '0');
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), secondaryMintTransaction.quantity.toString());
+    assert.equal((await shroomiesInstance.lastMintNonce(secondaryMintTransaction.minter)).toString(), secondaryMintTransaction.nonce.toString());
+
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    await shroomiesInstance.premint(
+      mainMintTransaction.quantity,
+      mainMintTransaction.mainCollection,
+      mainMintTransaction.nonce,
+      mainSignature.signature,
+      { from: mainMintTransaction.minter, value: String(mintPrice * mainMintTransaction.quantity) }
+    );
+
+    assert.equal((await shroomiesInstance.secondaryMinted()).toString(), secondaryMintTransaction.quantity.toString());
+    assert.equal((await shroomiesInstance.mainMinted()).toString(), mainMintTransaction.quantity.toString());
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), (mainMintTransaction.quantity + secondaryMintTransaction.quantity).toString());
+    assert.equal((await shroomiesInstance.lastMintNonce(mainMintTransaction.minter)).toString(), mainMintTransaction.nonce.toString());
+  });
+
+  // ------------------------------------------------ MINT -----------------------------------------------------------------
+
+  it('calls mint (fails due to zero quantity)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance } = await getShroomiesInstance(now, later, now);
+
+    await truffleAssert.fails(
+      shroomiesInstance.mint(0, { value: '0' }),
+    );
+  });
+
+  it('calls mint (fails due to inactive mint)', async () => {
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(later, later + 100000, later);
+
+    await truffleAssert.fails(
+      shroomiesInstance.mint(10, { from: accounts[1], value: String(mintPrice * 10) }
+      ),
+    );
+  });
+
+  it('calls mint (fails due to bad value)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    await truffleAssert.fails(
+      shroomiesInstance.mint(10, { from: accounts[0], value: String(mintPrice * 10 - 1) }
+      ),
+    );
+  });
+
+  it('calls mint (fails due to sellout secondary)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    // mint 5/5
+    await shroomiesInstance.mint(
+      5,
+      { from: accounts[1], value: String(mintPrice * 5) }
+    );
+
+    // zero left
+    await truffleAssert.fails(
+      shroomiesInstance.mint(
+        5,
+        { from: accounts[1], value: String(mintPrice * 5) }
+      )
+    );
+  });
+
+  it('calls mint (fails due to sellout main)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    // mint 5/5
+    await shroomiesInstance.mint(
+      5,
+      { from: accounts[1], value: String(mintPrice * 5) }
+    );
+
+    // zero left
+    await truffleAssert.fails(
+      shroomiesInstance.mint(
+        5,
+        { from: accounts[1], value: String(mintPrice * 5) }
+      )
+    );
+  });
+
+  it('calls mint (fails due to exceeding supply secondary)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    await truffleAssert.fails(
+      shroomiesInstance.mint(
+        6,
+        { from: accounts[1], value: String(mintPrice * 6) }
+      ),
+    );
+  });
+
+  it('calls mint (fails due to exceeding supply main)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    await truffleAssert.fails(
+      shroomiesInstance.mint(
+        6,
+        { from: accounts[1], value: String(mintPrice * 6) }
+      ),
+    );
+  });
+
+  it('calls mint (succeeds and increases counts)', async () => {
+    const now = 1;
+    const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+    const { shroomiesInstance, mintPrice } = await getShroomiesInstance(now, later, now);
+
+    await shroomiesInstance.mint(
+      10,
+      { from: accounts[1], value: String(mintPrice * 10) }
+    );
+
+    assert.equal((await shroomiesInstance.secondaryMinted()).toString(), String(10));
+    assert.equal((await shroomiesInstance.mainMinted()).toString(), '0');
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), String(10));
+
+    await shroomiesInstance.updateMainCollectionMinting(true);
+
+    await shroomiesInstance.mint(
+      10,
+      { from: accounts[1], value: String(mintPrice * 10) }
+    );
+
+    assert.equal((await shroomiesInstance.secondaryMinted()).toString(), String(10));
+    assert.equal((await shroomiesInstance.mainMinted()).toString(), String(10));
+    assert.equal((await shroomiesInstance.totalSupply()).toString(), String(20));
+  });
+
+  // ------------------------------------------------ MINT END -------------------------------------------------------------
 
   it('withdraws', async () => {
     const now = 1;
