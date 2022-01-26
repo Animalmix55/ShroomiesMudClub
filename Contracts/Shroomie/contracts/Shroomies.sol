@@ -2,6 +2,13 @@
 
 pragma solidity ^0.8.9;
 
+/* ---------------------------------------------------------------------------------------- */
+/* Author: Cory Cherven                                                                     */
+/* Twitter: @animalmix55                                                                    */
+/* Note: The objective is always to improve web3. If you see something you like, please use */
+/*       it for your project. Keep web3 open source, always use an MIT license.             */
+/* ---------------------------------------------------------------------------------------- */
+
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
