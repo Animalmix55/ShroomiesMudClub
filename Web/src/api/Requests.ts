@@ -22,9 +22,12 @@ export const getMintSignature = async (
 
 export const getWhitelist = async (
     api: string,
-    address: string
+    address: string,
+    isMainCollection: boolean
 ): Promise<number> => {
-    const url = `${api}/whitelist.php?address=${address}`;
+    const url = `${api}/whitelist.php?address=${address}&mainCollection=${String(
+        isMainCollection
+    )}`;
     const result = await axios.get(url);
 
     return Number(result.data);

@@ -3,7 +3,7 @@ import { Route, Switch } from 'react-router';
 import { useStyletron } from 'styletron-react';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import MainPage from '../pages/Main/Main';
-import MintPage from '../pages/Mint';
+import MintPage from '../pages/Mint/Mint';
 
 export enum Page {
     Main = '/',

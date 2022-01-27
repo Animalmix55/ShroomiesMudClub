@@ -1,11 +1,11 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
-import { Web3ContextProvider } from '../contexts/Web3Context';
-import { ContractContextProvider } from '../contexts/ContractContext';
-import { MetamaskModal } from '../molecules/MetamaskModal';
-import { InvalidChainModal } from '../molecules/InvalidChainModal';
-import { MOBILE } from '../utilties/MediaQueries';
-import BG from '../assets/images/MAGIC MINT/GRASS_3-01.png';
+import { Web3ContextProvider } from '../../contexts/Web3Context';
+import { ContractContextProvider } from '../../contexts/ContractContext';
+import { MetamaskModal } from '../../molecules/MetamaskModal';
+import { InvalidChainModal } from '../../molecules/InvalidChainModal';
+import { MOBILE } from '../../utilties/MediaQueries';
+import BG from '../../assets/images/MAGIC MINT/GRASS_3-01.png';
 
 export const MintPage = (): JSX.Element => {
     const [css] = useStyletron();

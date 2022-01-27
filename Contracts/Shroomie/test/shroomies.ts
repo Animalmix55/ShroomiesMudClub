@@ -15,6 +15,13 @@ interface MintTransaction {
     nonce: number;
 }
 
+interface BatchMintTransaction {
+    batchId: string;
+    mainCollection: boolean;
+    batchSize: number;
+    minter: string;
+}
+
 const getShroomiesInstance = async (
     wlStart: number,
     wlEnd: number,
@@ -51,7 +58,7 @@ const getShroomiesInstance = async (
     };
 };
 
-const getSignedMessage =
+const getUserWhitelistSignedMessage =
     (
         contract: ShroomiesInstance,
         signer: ReturnType<Web3['eth']['accounts']['create']>
@@ -59,11 +66,28 @@ const getSignedMessage =
     async (transaction: MintTransaction) => {
         const { mainCollection, minter, quantity, nonce } = transaction;
 
-        const messageHash = await contract.getPremintHash(
+        const messageHash = await contract.getUserWhitelistHash(
             minter,
             quantity,
             mainCollection,
             nonce
+        );
+        return signer.sign(messageHash);
+    };
+
+const getBatchWhitelistSignedMessage =
+    (
+        contract: ShroomiesInstance,
+        signer: ReturnType<Web3['eth']['accounts']['create']>
+    ) =>
+    async (trans: BatchMintTransaction) => {
+        const { minter, batchId, mainCollection, batchSize } = trans;
+
+        const messageHash = await contract.getWhitelistPasswordHash(
+            minter,
+            batchId,
+            mainCollection,
+            batchSize
         );
         return signer.sign(messageHash);
     };
@@ -549,7 +573,10 @@ contract('Shroomies Mud Club', (accounts) => {
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const mainMintTransaction: MintTransaction = {
             quantity: 10,
             nonce: 2,
@@ -575,7 +602,7 @@ contract('Shroomies Mud Club', (accounts) => {
             '0'
         );
 
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             secondaryMintTransaction.quantity,
             secondaryMintTransaction.mainCollection,
             secondaryMintTransaction.nonce,
@@ -605,7 +632,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         await shroomiesInstance.updateMainCollectionMinting(true);
 
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             mainMintTransaction.quantity,
             mainMintTransaction.mainCollection,
             mainMintTransaction.nonce,
@@ -632,13 +659,19 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls getPremintHash', async () => {
+    it('calls getUserWhitelistHash', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
-        const { shroomiesInstance, signer, signatureVerifierInstance } =
-            await getShroomiesInstance(now, later, now);
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const { shroomiesInstance, signer } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
 
         const transaction: MintTransaction = {
             nonce: 1,
@@ -648,26 +681,47 @@ contract('Shroomies Mud Club', (accounts) => {
         };
 
         const { signature } = await signTransaction(transaction);
-        const isValid = await signatureVerifierInstance.verify(
-            signer.address,
-            transaction.minter,
-            transaction.quantity,
-            transaction.mainCollection,
-            transaction.nonce,
-            signature
-        );
 
-        assert.ok(isValid);
+        assert.ok(!!signature);
     });
 
-    it('calls premint (fails due to invalid sig)', async () => {
+    it('calls getWhitelistPasswordHash', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const { signature } = await signTransaction(batch);
+
+        assert.ok(!!signature);
+    });
+
+    it('calls userWhitelistMint (fails due to invalid sig)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 10,
             nonce: 1,
@@ -679,7 +733,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         // wrong sender
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -695,7 +749,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         // bad quantity
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity + 1, // bad quantity
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -711,7 +765,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         // bad main collection flag
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 !secondaryMintTransaction.mainCollection, // bad flag
                 secondaryMintTransaction.nonce,
@@ -727,7 +781,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         // bad nonce
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce + 1, // bad nonce
@@ -742,14 +796,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to zero quantity)', async () => {
+    it('calls userWhitelistMint (fails due to zero quantity)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 0, // zero quantity
             nonce: 1,
@@ -760,7 +817,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature = await signTransaction(secondaryMintTransaction);
 
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity, // zero quantity
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -775,14 +832,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to reused nonce)', async () => {
+    it('calls userWhitelistMint (fails due to reused nonce)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 10,
             nonce: 1,
@@ -792,7 +852,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         const signature = await signTransaction(secondaryMintTransaction);
 
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             secondaryMintTransaction.quantity, // zero quantity
             secondaryMintTransaction.mainCollection,
             secondaryMintTransaction.nonce,
@@ -803,7 +863,7 @@ contract('Shroomies Mud Club', (accounts) => {
             }
         );
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -818,13 +878,16 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to inactive mint)', async () => {
+    it('calls userWhitelistMint (fails due to inactive mint)', async () => {
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(later, later + 100000, later);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 10,
             nonce: 1,
@@ -835,7 +898,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature = await signTransaction(secondaryMintTransaction);
 
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -850,14 +913,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to bad value)', async () => {
+    it('calls userWhitelistMint (fails due to bad value)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 10,
             nonce: 1,
@@ -868,7 +934,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature = await signTransaction(secondaryMintTransaction);
 
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -883,14 +949,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to sellout secondary)', async () => {
+    it('calls userWhitelistMint (fails due to sellout secondary)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction1: MintTransaction = {
             quantity: 5,
             nonce: 1,
@@ -901,7 +970,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature1 = await signTransaction(secondaryMintTransaction1);
 
         // mint 5/5
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             secondaryMintTransaction1.quantity,
             secondaryMintTransaction1.mainCollection,
             secondaryMintTransaction1.nonce,
@@ -922,7 +991,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature2 = await signTransaction(secondaryMintTransaction2);
         // zero left
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction2.quantity,
                 secondaryMintTransaction2.mainCollection,
                 secondaryMintTransaction2.nonce,
@@ -937,7 +1006,7 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to sellout main)', async () => {
+    it('calls userWhitelistMint (fails due to sellout main)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
@@ -945,7 +1014,10 @@ contract('Shroomies Mud Club', (accounts) => {
             await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
         await shroomiesInstance.updateMainCollectionMinting(true);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const mainMintTransaction1: MintTransaction = {
             quantity: 5,
             nonce: 1,
@@ -956,7 +1028,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature1 = await signTransaction(mainMintTransaction1);
 
         // mint 5/5
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             mainMintTransaction1.quantity,
             mainMintTransaction1.mainCollection,
             mainMintTransaction1.nonce,
@@ -977,7 +1049,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature2 = await signTransaction(mainMintTransaction2);
         // zero left
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 mainMintTransaction2.quantity,
                 mainMintTransaction2.mainCollection,
                 mainMintTransaction2.nonce,
@@ -990,14 +1062,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to exceeding supply secondary)', async () => {
+    it('calls userWhitelistMint (fails due to exceeding supply secondary)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const secondaryMintTransaction: MintTransaction = {
             quantity: 8, // only 5 available
             nonce: 1,
@@ -1008,7 +1083,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature = await signTransaction(secondaryMintTransaction);
 
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 secondaryMintTransaction.quantity,
                 secondaryMintTransaction.mainCollection,
                 secondaryMintTransaction.nonce,
@@ -1023,14 +1098,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (fails due to exceeding supply main)', async () => {
+    it('calls userWhitelistMint (fails due to exceeding supply main)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
         const mainMintTransaction: MintTransaction = {
             quantity: 8, // only 5 available
             nonce: 1,
@@ -1041,7 +1119,7 @@ contract('Shroomies Mud Club', (accounts) => {
         const signature = await signTransaction(mainMintTransaction);
 
         await truffleAssert.fails(
-            shroomiesInstance.premint(
+            shroomiesInstance.userWhitelistMint(
                 mainMintTransaction.quantity,
                 mainMintTransaction.mainCollection,
                 mainMintTransaction.nonce,
@@ -1054,14 +1132,17 @@ contract('Shroomies Mud Club', (accounts) => {
         );
     });
 
-    it('calls premint (succeeds and increases counts)', async () => {
+    it('calls userWhitelistMint (succeeds and increases counts)', async () => {
         const now = 1;
         const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
 
         const { shroomiesInstance, signer, mintPrice } =
             await getShroomiesInstance(now, later, now);
 
-        const signTransaction = getSignedMessage(shroomiesInstance, signer);
+        const signTransaction = getUserWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
 
         const secondaryMintTransaction: MintTransaction = {
             quantity: 8,
@@ -1082,7 +1163,7 @@ contract('Shroomies Mud Club', (accounts) => {
         );
         const mainSignature = await signTransaction(mainMintTransaction);
 
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             secondaryMintTransaction.quantity,
             secondaryMintTransaction.mainCollection,
             secondaryMintTransaction.nonce,
@@ -1113,7 +1194,7 @@ contract('Shroomies Mud Club', (accounts) => {
 
         await shroomiesInstance.updateMainCollectionMinting(true);
 
-        await shroomiesInstance.premint(
+        await shroomiesInstance.userWhitelistMint(
             mainMintTransaction.quantity,
             mainMintTransaction.mainCollection,
             mainMintTransaction.nonce,
@@ -1145,6 +1226,602 @@ contract('Shroomies Mud Club', (accounts) => {
                 )
             ).toString(),
             mainMintTransaction.nonce.toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.getWhitelistMints(accounts[1])
+            ).secondaryCollection.toString(),
+            secondaryMintTransaction.quantity.toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.getWhitelistMints(accounts[1])
+            ).mainCollection.toString(),
+            mainMintTransaction.quantity.toString()
+        );
+    });
+
+    // ------------------------------------------------ BATCH MINT -----------------------------------------------------------
+
+    it('calls batchWhitelistMint (fails due to invalid sig)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 10;
+
+        // wrong sender
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: accounts[2],
+                    value: String(mintPrice * quantity),
+                } // bad sender
+            )
+        );
+
+        // wrong collection
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                !batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: accounts[1],
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+
+        // wrong batch id
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                `${batch.batchId}-new`,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: accounts[1],
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+
+        // wrong batch size
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize + 1,
+                signature.signature,
+                {
+                    from: accounts[1],
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to zero quantity)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 0;
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to inactive mint)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        let batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: true, // inactive
+            minter: accounts[1],
+        };
+
+        let signature = await signTransaction(batch);
+        const quantity = 5;
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true);
+
+        batch = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false, // inactive
+            minter: accounts[1],
+        };
+
+        signature = await signTransaction(batch);
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to bad value)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 5;
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity + 1),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to sellout secondary)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        let quantity = 5;
+
+        // mint 5/5
+        await shroomiesInstance.batchWhitelistMint(
+            quantity,
+            batch.mainCollection,
+            batch.batchId,
+            batch.batchSize,
+            signature.signature,
+            {
+                from: batch.minter,
+                value: String(mintPrice * quantity),
+            }
+        );
+
+        quantity = 1;
+
+        // sold out
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to sellout main)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        // start main
+        await shroomiesInstance.updateMainCollectionMinting(true);
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: true,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        let quantity = 5;
+
+        // mint 5/5
+        await shroomiesInstance.batchWhitelistMint(
+            quantity,
+            batch.mainCollection,
+            batch.batchId,
+            batch.batchSize,
+            signature.signature,
+            {
+                from: batch.minter,
+                value: String(mintPrice * quantity),
+            }
+        );
+
+        quantity = 1;
+
+        // sold out
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to exceeding supply secondary)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 6; // over supply of 5
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to exceeding supply main)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now, 1, 100, 10, 5);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true);
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: true,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 6; // over supply of 5
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to exceeding batch supply)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now, 1, 100);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true);
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 10,
+            mainCollection: true,
+            minter: accounts[1],
+        };
+
+        const signature = await signTransaction(batch);
+        let quantity = 11; // over batch size of 10
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+
+        quantity = 10; // mint 10/10 in batch
+
+        await shroomiesInstance.batchWhitelistMint(
+            quantity,
+            batch.mainCollection,
+            batch.batchId,
+            batch.batchSize,
+            signature.signature,
+            {
+                from: batch.minter,
+                value: String(mintPrice * quantity),
+            }
+        );
+
+        assert.equal(
+            (await shroomiesInstance.mintedInBatch(batch.batchId)).toString(),
+            quantity.toString()
+        );
+
+        quantity = 1; // 0 left
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (succeeds and increases counts)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const secondaryMintBatch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+        };
+
+        const mainMintBatch: BatchMintTransaction = {
+            ...secondaryMintBatch,
+            batchId: 'test-main',
+            mainCollection: true,
+        };
+
+        const secondarySignature = await signTransaction(secondaryMintBatch);
+        const mainSignature = await signTransaction(mainMintBatch);
+        const quantity = 6;
+
+        await shroomiesInstance.batchWhitelistMint(
+            quantity,
+            secondaryMintBatch.mainCollection,
+            secondaryMintBatch.batchId,
+            secondaryMintBatch.batchSize,
+            secondarySignature.signature,
+            {
+                from: secondaryMintBatch.minter,
+                value: String(mintPrice * quantity),
+            }
+        );
+
+        assert.equal(
+            (await shroomiesInstance.secondaryMinted()).toString(),
+            quantity.toString()
+        );
+        assert.equal((await shroomiesInstance.mainMinted()).toString(), '0');
+        assert.equal(
+            (await shroomiesInstance.totalSupply()).toString(),
+            quantity.toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.mintedInBatch(
+                    secondaryMintBatch.batchId
+                )
+            ).toString(),
+            quantity.toString()
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true);
+
+        await shroomiesInstance.batchWhitelistMint(
+            quantity,
+            mainMintBatch.mainCollection,
+            mainMintBatch.batchId,
+            mainMintBatch.batchSize,
+            mainSignature.signature,
+            {
+                from: mainMintBatch.minter,
+                value: String(mintPrice * quantity),
+            }
+        );
+
+        assert.equal(
+            (await shroomiesInstance.secondaryMinted()).toString(),
+            quantity.toString()
+        );
+        assert.equal(
+            (await shroomiesInstance.mainMinted()).toString(),
+            quantity.toString()
+        );
+        assert.equal(
+            (await shroomiesInstance.totalSupply()).toString(),
+            (quantity + quantity).toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.mintedInBatch(mainMintBatch.batchId)
+            ).toString(),
+            quantity.toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.getWhitelistMints(accounts[1])
+            ).secondaryCollection.toString(),
+            quantity.toString()
+        );
+        assert.equal(
+            (
+                await shroomiesInstance.getWhitelistMints(accounts[1])
+            ).mainCollection.toString(),
+            quantity.toString()
         );
     });
 

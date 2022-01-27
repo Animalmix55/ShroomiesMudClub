@@ -68,6 +68,10 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * The last nonce used to sign a whitelist mint transaction.
      */
     mapping(address => uint16) public lastMintNonce;
+    /**
+     * A mapping of batch identifiers to the number minted inside them.
+     */
+    mapping(string => uint16) public mintedInBatch;
 
     // ---------------------- WHITELIST VARIABLES -------------------------
 
@@ -88,7 +92,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         /**
          * The total number of tokens minted in this whitelist
          */
-        uint16 totalMinted;
+        WhitelistMinted totalMinted;
         /**
          * The minters in this whitelisted mint
          * mapped to the number minted
@@ -284,19 +288,16 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         }
 
         for (uint16 i; i < _amounts.length; i++) {
-            uint16 amount = _amounts[i];
-            address target = _addresses[i];
-
-            localMinted += amount;
-            transactionQuantity += amount;
+            localMinted += _amounts[i];
+            transactionQuantity += _amounts[i];
             require(transactionQuantity <= remaining, "Supply overflow");
 
             // DISTRIBUTE THE TOKENS
-            for (uint16 j = 1; j <= amount; j++) {
-                _mint(target, lastMinted + j);
+            for (uint16 j = 1; j <= _amounts[i]; j++) {
+                _mint(_addresses[i], lastMinted + j);
             }
 
-            lastMinted += amount;
+            lastMinted += _amounts[i];
         }
 
         totalSupply += transactionQuantity;
@@ -335,8 +336,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        uint256 mainCollectionStart = maxSupply - mainCollectionSize + 1;
-        if (tokenId >= mainCollectionStart)
+        if (tokenId >= maxSupply - mainCollectionSize + 1)
             return
                 bytes(mainBaseURI).length > 0
                     ? string(abi.encodePacked(mainBaseURI, tokenId.toString()))
@@ -366,18 +366,34 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * @param _mainCollection - if the mint will be main (true) or secondary (false).
      * @param _nonce - the nonce to use for this transaction (> last).
      */
-    function getPremintHash(
+    function getUserWhitelistHash(
         address _minter,
         uint16 _quantity,
         bool _mainCollection,
         uint16 _nonce
-    ) public pure returns (bytes32) {
+    ) external pure returns (bytes32) {
         return
             VerifySignature.getMessageHash(
-                _minter,
-                _quantity,
-                _mainCollection,
-                _nonce
+                abi.encodePacked(_minter, _quantity, _mainCollection, _nonce)
+            );
+    }
+
+    /**
+     * Gets a hash to participate in a whitelist batch mint.
+     * @param _minter - the minter for the desired mint.
+     * @param _mainCollection - if the mint will be main (true) or secondary (false).
+     * @param _batch - an identifier for the target batch to mint into.
+     * @param _batchSize - the max size of a given batch.
+     */
+    function getWhitelistPasswordHash(
+        address _minter,
+        string calldata _batch,
+        bool _mainCollection,
+        uint16 _batchSize
+    ) external pure returns (bytes32) {
+        return
+            VerifySignature.getMessageHash(
+                abi.encodePacked(_minter, _batch, _mainCollection, _batchSize)
             );
     }
 
@@ -392,7 +408,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * @param _signature - the signature given by the centralized whitelist authority, signed by
      *                    the account specified as mintSigner.
      */
-    function premint(
+    function userWhitelistMint(
         uint16 _quantity,
         bool _mainCollection,
         uint16 _nonce,
@@ -401,49 +417,89 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         require(
             VerifySignature.verify(
                 mintSigner,
-                msg.sender,
-                _quantity,
-                _mainCollection,
-                _nonce,
+                abi.encodePacked(
+                    msg.sender,
+                    _quantity,
+                    _mainCollection,
+                    _nonce
+                ),
                 _signature
             ),
             "Invalid sig"
         );
-        require(mainCollectionMinting || !_mainCollection, "Not minting col.");
-        require(_quantity >= 1, "Zero mint");
+        require(mintPrice * _quantity == msg.value, "Bad value");
+        require(mainCollectionMinting == _mainCollection, "Not minting col.");
         require(lastMintNonce[msg.sender] < _nonce, "Nonce used");
         require(
             whitelistMint.startDate <= block.timestamp &&
                 whitelistMint.endDate >= block.timestamp,
             "No mint"
         );
-        require(mintPrice * _quantity == msg.value, "Bad value");
 
-        uint16 remaining;
-        uint16 lastMinted;
         if (_mainCollection) {
-            lastMinted = (maxSupply - mainCollectionSize) + mainMinted;
-            remaining = mainCollectionSize - mainMinted;
-            mainMinted += _quantity;
             whitelistMint.minted[msg.sender].mainCollection += _quantity;
+            whitelistMint.totalMinted.mainCollection += _quantity;
         } else {
-            lastMinted = secondaryMinted;
-            remaining = maxSupply - mainCollectionSize - secondaryMinted;
-            secondaryMinted += _quantity;
             whitelistMint.minted[msg.sender].secondaryCollection += _quantity;
+            whitelistMint.totalMinted.secondaryCollection += _quantity;
         }
 
-        require(remaining > 0, "Mint over");
-        require(_quantity <= remaining, "Not enough");
-
-        totalSupply += _quantity;
-        whitelistMint.totalMinted += _quantity;
         lastMintNonce[msg.sender] = _nonce; // update nonce
 
-        // DISTRIBUTE THE TOKENS
-        for (uint16 i = 1; i <= _quantity; i++) {
-            _safeMint(msg.sender, lastMinted + i);
+        _mint(msg.sender, _quantity, _mainCollection);
+    }
+
+    /**
+     * Mints in the premint stage by using a signed transaction from a centralized whitelist.
+     * The message signer is expected to only sign messages when they fall within the whitelist
+     * specifications.
+     *
+     * @param _quantity - the number to mint
+     * @param _mainCollection - true if minting the main collection, false otherwise (secondary).
+     * @param _batch - the batch identifier for the given mint.
+     * @param _signature - the signature given by the centralized whitelist authority, signed by
+     *                    the account specified as mintSigner.
+     */
+    function batchWhitelistMint(
+        uint16 _quantity,
+        bool _mainCollection,
+        string calldata _batch,
+        uint16 _batchSize,
+        bytes calldata _signature
+    ) public payable nonReentrant {
+        require(
+            VerifySignature.verify(
+                mintSigner,
+                abi.encodePacked(
+                    msg.sender,
+                    _batch,
+                    _mainCollection,
+                    _batchSize
+                ),
+                _signature
+            ),
+            "Invalid sig"
+        );
+        require(mintPrice * _quantity == msg.value, "Bad value");
+        require(mainCollectionMinting == _mainCollection, "Not minting col.");
+        require(
+            whitelistMint.startDate <= block.timestamp &&
+                whitelistMint.endDate >= block.timestamp,
+            "No mint"
+        );
+        require(mintedInBatch[_batch] + _quantity <= _batchSize);
+
+        if (_mainCollection) {
+            whitelistMint.minted[msg.sender].mainCollection += _quantity;
+            whitelistMint.totalMinted.mainCollection += _quantity;
+        } else {
+            whitelistMint.minted[msg.sender].secondaryCollection += _quantity;
+            whitelistMint.totalMinted.secondaryCollection += _quantity;
         }
+
+        mintedInBatch[_batch] += _quantity;
+
+        _mint(msg.sender, _quantity, _mainCollection);
     }
 
     /**
@@ -455,31 +511,11 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * @param _quantity - the number of tokens to mint
      */
     function mint(uint16 _quantity) public payable nonReentrant {
-        uint16 remaining;
-        uint16 lastMinted;
-        if (mainCollectionMinting) {
-            lastMinted = (maxSupply - mainCollectionSize) + mainMinted;
-            remaining = mainCollectionSize - mainMinted;
-            mainMinted += _quantity;
-        } else {
-            lastMinted = secondaryMinted;
-            remaining = maxSupply - mainCollectionSize - secondaryMinted;
-            secondaryMinted += _quantity;
-        }
-
-        require(remaining > 0, "Mint over");
-        require(_quantity >= 1, "Zero mint");
-        require(_quantity <= remaining, "Not enough");
         require(block.timestamp >= publicMint.startDate, "No mint");
         require(_quantity <= publicMint.maxPerTransaction, "Exceeds max");
         require(_quantity * mintPrice == msg.value, "Invalid value");
 
-        // DISTRIBUTE THE TOKENS
-        totalSupply += _quantity;
-
-        for (uint16 i = 1; i <= _quantity; i++) {
-            _safeMint(msg.sender, lastMinted + i);
-        }
+        _mint(msg.sender, _quantity, mainCollectionMinting);
     }
 
     /**
@@ -498,5 +534,37 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      */
     receive() external payable {
         // NOTHING TO SEE HERE...
+    }
+
+    // ---------------------------- INTERNAL FUNCTIONS --------------------------------
+
+    function _mint(
+        address _user,
+        uint16 _quantity,
+        bool _mainMint
+    ) internal {
+        require(_quantity >= 1, "Zero mint");
+
+        uint16 remaining;
+        uint16 lastMinted;
+        if (_mainMint) {
+            lastMinted = (maxSupply - mainCollectionSize) + mainMinted;
+            remaining = mainCollectionSize - mainMinted;
+            mainMinted += _quantity;
+        } else {
+            lastMinted = secondaryMinted;
+            remaining = maxSupply - mainCollectionSize - secondaryMinted;
+            secondaryMinted += _quantity;
+        }
+
+        require(remaining > 0, "Mint over");
+        require(_quantity <= remaining, "Not enough");
+
+        // DISTRIBUTE THE TOKENS
+        totalSupply += _quantity;
+
+        for (uint16 i = 1; i <= _quantity; i++) {
+            _safeMint(_user, lastMinted + i);
+        }
     }
 }
