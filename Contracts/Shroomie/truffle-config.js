@@ -4,16 +4,16 @@ require('ts-node').register({
 });
 require('dotenv').config();
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+// const HDWalletProvider = require('@truffle/hdwallet-provider');
 
-const ropstenProvider = new HDWalletProvider(
-    process.env.ropsten_private,
-    'https://ropsten.infura.io/v3/81396dca1e0848fea22c248365f42873'
-);
-const rinkebyProvider = new HDWalletProvider(
-    process.env.rinkeby_private,
-    'https://rinkeby.infura.io/v3/81396dca1e0848fea22c248365f42873'
-);
+// const ropstenProvider = new HDWalletProvider(
+//     process.env.ropsten_private,
+//     'https://ropsten.infura.io/v3/81396dca1e0848fea22c248365f42873'
+// );
+// const rinkebyProvider = new HDWalletProvider(
+//     process.env.rinkeby_private,
+//     'https://rinkeby.infura.io/v3/81396dca1e0848fea22c248365f42873'
+// );
 
 module.exports = {
     // Uncommenting the defaults below
@@ -27,24 +27,24 @@ module.exports = {
             host: '127.0.0.1',
             port: 7545,
             network_id: '*',
-            gasPrice: 100000000000,
+            gasPrice: 10000,
         },
         test: {
             host: '127.0.0.1',
             port: 7545,
-            gasPrice: 100000000000,
+            gasPrice: 10000,
             network_id: '*',
         },
-        ropsten: {
-            provider: ropstenProvider,
-            network_id: 3,
-            gasPrice: 10000000000, // 10 gwei
-        },
-        rinkeby: {
-            provider: rinkebyProvider,
-            network_id: 4,
-            gasPrice: 10000000000, // 10 gwei
-        },
+        // ropsten: {
+        //     provider: ropstenProvider,
+        //     network_id: 3,
+        //     gasPrice: 10000000000, // 10 gwei
+        // },
+        // rinkeby: {
+        //     provider: rinkebyProvider,
+        //     network_id: 4,
+        //     gasPrice: 10000000000, // 10 gwei
+        // },
     },
     compilers: {
         solc: {

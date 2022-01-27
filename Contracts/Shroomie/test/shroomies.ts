@@ -591,13 +591,13 @@ contract('Shroomies Mud Club', (accounts) => {
 
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).mainCollection.toString(),
             '0'
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).secondaryCollection.toString(),
             '0'
         );
@@ -619,13 +619,13 @@ contract('Shroomies Mud Club', (accounts) => {
 
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).mainCollection.toString(),
             '0'
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).secondaryCollection.toString(),
             secondaryMintTransaction.quantity.toString()
         );
@@ -647,13 +647,13 @@ contract('Shroomies Mud Club', (accounts) => {
 
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).mainCollection.toString(),
             mainMintTransaction.quantity.toString()
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).secondaryCollection.toString(),
             secondaryMintTransaction.quantity.toString()
         );
@@ -1229,13 +1229,13 @@ contract('Shroomies Mud Club', (accounts) => {
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).secondaryCollection.toString(),
             secondaryMintTransaction.quantity.toString()
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).mainCollection.toString(),
             mainMintTransaction.quantity.toString()
         );
@@ -1811,17 +1811,19 @@ contract('Shroomies Mud Club', (accounts) => {
             ).toString(),
             quantity.toString()
         );
+
+        // getUserWhitelistMints should not be affected.
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).secondaryCollection.toString(),
-            quantity.toString()
+            '0'
         );
         assert.equal(
             (
-                await shroomiesInstance.getWhitelistMints(accounts[1])
+                await shroomiesInstance.getUserWhitelistMints(accounts[1])
             ).mainCollection.toString(),
-            quantity.toString()
+            '0'
         );
     });
 

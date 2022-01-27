@@ -72,6 +72,11 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      * A mapping of batch identifiers to the number minted inside them.
      */
     mapping(string => uint16) public mintedInBatch;
+    /**
+     * A mapping of secondary collection NFTs that have already
+     * been utilized to mint the main collection.
+     */
+    mapping(uint16 => bool) public isSpent;
 
     // ---------------------- WHITELIST VARIABLES -------------------------
 
@@ -90,14 +95,12 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
          */
         uint256 endDate;
         /**
-         * The total number of tokens minted in this whitelist
-         */
-        WhitelistMinted totalMinted;
-        /**
          * The minters in this whitelisted mint
-         * mapped to the number minted
+         * mapped to the number minted.
+         * @dev ONLY INCLUDES user whitelist mints, not
+         *      batch or secondary whitelist mints.
          */
-        mapping(address => WhitelistMinted) minted;
+        mapping(address => WhitelistMinted) userMinted;
     }
 
     /**
@@ -348,15 +351,16 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
     }
 
     /**
-     * Gets the number of mints on each (main and secondary) whitelists already completed.
+     * Gets the number of mints using the userWhitelistMint function on each
+     * (main and secondary) whitelists already completed.
      * @param _user - the user about which to query mints.
      */
-    function getWhitelistMints(address _user)
+    function getUserWhitelistMints(address _user)
         external
         view
         returns (WhitelistMinted memory)
     {
-        return whitelistMint.minted[_user];
+        return whitelistMint.userMinted[_user];
     }
 
     /**
@@ -436,15 +440,10 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             "No mint"
         );
 
-        if (_mainCollection) {
-            whitelistMint.minted[msg.sender].mainCollection += _quantity;
-            whitelistMint.totalMinted.mainCollection += _quantity;
-        } else {
-            whitelistMint.minted[msg.sender].secondaryCollection += _quantity;
-            whitelistMint.totalMinted.secondaryCollection += _quantity;
-        }
-
         lastMintNonce[msg.sender] = _nonce; // update nonce
+
+        if (_mainCollection) whitelistMint.userMinted[msg.sender].mainCollection += _quantity;
+        else whitelistMint.userMinted[msg.sender].secondaryCollection += _quantity;
 
         _mint(msg.sender, _quantity, _mainCollection);
     }
@@ -467,6 +466,8 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         uint16 _batchSize,
         bytes calldata _signature
     ) public payable nonReentrant {
+        require(mintPrice * _quantity == msg.value, "Bad value");
+        require(mintedInBatch[_batch] + _quantity <= _batchSize, "batch full");
         require(
             VerifySignature.verify(
                 mintSigner,
@@ -480,26 +481,40 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
             ),
             "Invalid sig"
         );
-        require(mintPrice * _quantity == msg.value, "Bad value");
         require(mainCollectionMinting == _mainCollection, "Not minting col.");
         require(
             whitelistMint.startDate <= block.timestamp &&
                 whitelistMint.endDate >= block.timestamp,
             "No mint"
         );
-        require(mintedInBatch[_batch] + _quantity <= _batchSize);
-
-        if (_mainCollection) {
-            whitelistMint.minted[msg.sender].mainCollection += _quantity;
-            whitelistMint.totalMinted.mainCollection += _quantity;
-        } else {
-            whitelistMint.minted[msg.sender].secondaryCollection += _quantity;
-            whitelistMint.totalMinted.secondaryCollection += _quantity;
-        }
-
         mintedInBatch[_batch] += _quantity;
 
         _mint(msg.sender, _quantity, _mainCollection);
+    }
+
+    /**
+     * Allows holders of unspent secondary NFTs to mint the main collection in whitelist.
+     * @param heldIds - the ids of secondary collection NFTs to "spend" to use to mint
+     *                  on the main collection. Does not do anything (like burn) secondary NFTs.
+     */
+    function secondaryHolderWhitelistMint(uint16[] calldata heldIds) external payable nonReentrant {
+        require(mintPrice * heldIds.length == msg.value, "Bad value");
+        require(mainCollectionMinting, "Not main");
+        require(
+            whitelistMint.startDate <= block.timestamp &&
+                whitelistMint.endDate >= block.timestamp,
+            "No mint"
+        );
+
+        for (uint16 i; i < heldIds.length; i++) {
+            require(heldIds[i] <= maxSupply - mainCollectionSize, "not secondary");
+            require(ownerOf(heldIds[i]) == msg.sender, "not owner");
+            require(!isSpent[heldIds[i]], "id spent");
+
+            isSpent[heldIds[i]] = true;
+        }
+
+        _mint(msg.sender, uint16(heldIds.length), true);
     }
 
     /**
