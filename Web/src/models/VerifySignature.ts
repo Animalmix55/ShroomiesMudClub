@@ -30,10 +30,7 @@ export interface VerifySignature extends BaseContract {
   clone(): VerifySignature;
   methods: {
     getMessageHash(
-      _minter: string,
-      _quantity: number | string | BN,
-      _mainCollection: boolean,
-      _nonce: number | string | BN
+      encodedParameters: string | number[]
     ): NonPayableTransactionObject<string>;
 
     getEthSignedMessageHash(
@@ -41,17 +38,14 @@ export interface VerifySignature extends BaseContract {
     ): NonPayableTransactionObject<string>;
 
     verify(
-      _signer: string,
-      _minter: string,
-      _quantity: number | string | BN,
-      _mainCollection: boolean,
-      _nonce: number | string | BN,
+      signer: string,
+      encodedParameters: string | number[],
       signature: string | number[]
     ): NonPayableTransactionObject<boolean>;
 
     recoverSigner(
-      _ethSignedMessageHash: string | number[],
-      _signature: string | number[]
+      ethSignedMessageHash: string | number[],
+      signature: string | number[]
     ): NonPayableTransactionObject<string>;
 
     splitSignature(sig: string | number[]): NonPayableTransactionObject<{

@@ -20,6 +20,24 @@ export const getMintSignature = async (
     return result.data as never;
 };
 
+export const getBatchSignature = async (
+    api: string,
+    batchSecret: string,
+    address: string
+): Promise<{
+    signature: string;
+    batchSize: number;
+    mainCollection: boolean;
+}> => {
+    const url = `${api}/mint.php`;
+    const result = await axios.post(url, {
+        batchSecret,
+        address,
+    });
+
+    return result.data as never;
+};
+
 export const getWhitelist = async (
     api: string,
     address: string,

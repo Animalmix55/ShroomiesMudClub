@@ -89,6 +89,11 @@ export interface Shroomies extends BaseContract {
     ): NonPayableTransactionObject<boolean>;
 
     /**
+     * A mapping of secondary collection NFTs that have already been utilized to mint the main collection.
+     */
+    isSpent(arg0: number | string | BN): NonPayableTransactionObject<boolean>;
+
+    /**
      * The last nonce used to sign a whitelist mint transaction.
      */
     lastMintNonce(arg0: string): NonPayableTransactionObject<string>;
@@ -117,6 +122,11 @@ export interface Shroomies extends BaseContract {
      * The cost to mint in the current mint.
      */
     mintPrice(): NonPayableTransactionObject<string>;
+
+    /**
+     * A mapping of batch identifiers to the number minted inside them.
+     */
+    mintedInBatch(arg0: string): NonPayableTransactionObject<string>;
 
     /**
      * See {IERC721Metadata-name}.
@@ -193,7 +203,7 @@ export interface Shroomies extends BaseContract {
     symbol(): NonPayableTransactionObject<string>;
 
     /**
-     * To please Etherscan,  totalSupply is actually the current supply.
+     * To please Etherscan, totalSupply is actually the current supply.
      */
     totalSupply(): NonPayableTransactionObject<string>;
 
@@ -217,10 +227,8 @@ export interface Shroomies extends BaseContract {
     whitelistMint(): NonPayableTransactionObject<{
       startDate: string;
       endDate: string;
-      totalMinted: string;
       0: string;
       1: string;
-      2: string;
     }>;
 
     /**
@@ -282,6 +290,16 @@ export interface Shroomies extends BaseContract {
       _mainCollectionMinting: boolean
     ): NonPayableTransactionObject<void>;
 
+    /**
+     * onlyOwner
+     * Updates all of the information needed for switching sub collections.
+     * @param _mainCollectionMinting - a bool indicating if the main collection or secondary is minting.
+     * @param _price - the price of the mint.
+     * @param _publicMaxPerTransaction - the public transaction max.
+     * @param _publicStartDate - the public start date in unix seconds.
+     * @param _wlEndDate - the end date of the whitelist in unix seconds.
+     * @param _wlStartDate - the whitelist start date in unix seconds.
+     */
     batchMintUpdate(
       _publicMaxPerTransaction: number | string | BN,
       _publicStartDate: number | string | BN,
@@ -291,6 +309,12 @@ export interface Shroomies extends BaseContract {
       _mainCollectionMinting: boolean
     ): NonPayableTransactionObject<void>;
 
+    /**
+     * A helpful owner-only function to allow minting to specific wallets in bulk.
+     * @param _addresses - a parallel array to _amounts containing target addresses for each amount.
+     * @param _amounts - an array of mint amounts
+     * @param _mainCollection - indicated if the mint is on the main collection (true) or secondary (false).
+     */
     ownerMintTo(
       _amounts: (number | string | BN)[],
       _addresses: string[],
@@ -311,15 +335,40 @@ export interface Shroomies extends BaseContract {
       tokenId: number | string | BN
     ): NonPayableTransactionObject<string>;
 
-    getWhitelistMints(
+    /**
+     * Gets the number of mints using the userWhitelistMint function on each (main and secondary) whitelists already completed.
+     * @param _user - the user about which to query mints.
+     */
+    getUserWhitelistMints(
       _user: string
     ): NonPayableTransactionObject<[string, string]>;
 
-    getPremintHash(
+    /**
+     * Gets a hash to sign for preminting.
+     * @param _mainCollection - if the mint will be main (true) or secondary (false).
+     * @param _minter - the minter for the desired mint.
+     * @param _nonce - the nonce to use for this transaction (> last).
+     * @param _quantity - the quantity to mint.
+     */
+    getUserWhitelistHash(
       _minter: string,
       _quantity: number | string | BN,
       _mainCollection: boolean,
       _nonce: number | string | BN
+    ): NonPayableTransactionObject<string>;
+
+    /**
+     * Gets a hash to participate in a whitelist batch mint.
+     * @param _batch - an identifier for the target batch to mint into.
+     * @param _batchSize - the max size of a given batch.
+     * @param _mainCollection - if the mint will be main (true) or secondary (false).
+     * @param _minter - the minter for the desired mint.
+     */
+    getWhitelistPasswordHash(
+      _minter: string,
+      _batch: string,
+      _mainCollection: boolean,
+      _batchSize: number | string | BN
     ): NonPayableTransactionObject<string>;
 
     /**
@@ -329,11 +378,34 @@ export interface Shroomies extends BaseContract {
      * @param _quantity - the number to mint
      * @param _signature - the signature given by the centralized whitelist authority, signed by                    the account specified as mintSigner.
      */
-    premint(
+    userWhitelistMint(
       _quantity: number | string | BN,
       _mainCollection: boolean,
       _nonce: number | string | BN,
       _signature: string | number[]
+    ): PayableTransactionObject<void>;
+
+    /**
+     * Mints in the premint stage by using a signed transaction from a centralized whitelist. The message signer is expected to only sign messages when they fall within the whitelist specifications.
+     * @param _batch - the batch identifier for the given mint.
+     * @param _mainCollection - true if minting the main collection, false otherwise (secondary).
+     * @param _quantity - the number to mint
+     * @param _signature - the signature given by the centralized whitelist authority, signed by                    the account specified as mintSigner.
+     */
+    batchWhitelistMint(
+      _quantity: number | string | BN,
+      _mainCollection: boolean,
+      _batch: string,
+      _batchSize: number | string | BN,
+      _signature: string | number[]
+    ): PayableTransactionObject<void>;
+
+    /**
+     * Allows holders of unspent secondary NFTs to mint the main collection in whitelist.
+     * @param heldIds - the ids of secondary collection NFTs to "spend" to use to mint                  on the main collection. Does not do anything (like burn) secondary NFTs.
+     */
+    secondaryHolderWhitelistMint(
+      heldIds: (number | string | BN)[]
     ): PayableTransactionObject<void>;
 
     /**

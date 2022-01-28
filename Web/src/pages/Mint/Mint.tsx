@@ -6,6 +6,7 @@ import { MetamaskModal } from '../../molecules/MetamaskModal';
 import { InvalidChainModal } from '../../molecules/InvalidChainModal';
 import { MOBILE } from '../../utilties/MediaQueries';
 import BG from '../../assets/images/MAGIC MINT/GRASS_3-01.png';
+import { WhitelistMint } from './Subcomponents/WhitelistMint';
 
 export const MintPage = (): JSX.Element => {
     const [css] = useStyletron();
@@ -39,6 +40,9 @@ export const MintPage = (): JSX.Element => {
                     >
                         <InvalidChainModal />
                         <MetamaskModal />
+                        <div>
+                            <WhitelistMint />
+                        </div>
                     </div>
                 </div>
             </ContractContextProvider>

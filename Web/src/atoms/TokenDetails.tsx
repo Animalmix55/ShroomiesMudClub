@@ -51,7 +51,7 @@ export const TokenDetails = (props: Props): JSX.Element => {
 
     const cells = React.useMemo(
         () =>
-            meta.attributes.map((m) => (
+            (meta.attributes || []).map((m) => (
                 <MetaCell key={m.trait_type} attribute={m} />
             )),
         [meta.attributes]

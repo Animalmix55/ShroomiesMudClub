@@ -56,7 +56,7 @@ const getButtonColors = (
             return {
                 normal: theme.buttonColors.normal.secondary,
                 hovered: theme.buttonColors.hovered.secondary,
-                hoveredTextColor: theme.fontColors.hovered.secondary,
+                hoveredTextColor: theme.fontColors.hovered.primary,
                 disabledColor: theme.buttonColors.normal.disabled,
                 textColor: theme.fontColors.normal.primary,
             };
@@ -69,11 +69,11 @@ export type ButtonProps = Omit<
         HTMLButtonElement
     >,
     'ref'
-> & { buttonType: ButtonType };
+> & { buttonType: ButtonType; forceHover?: boolean };
 
 export const Button = React.forwardRef(
     (props: ButtonProps, ref: React.Ref<HTMLButtonElement>): JSX.Element => {
-        const { buttonType, className } = props;
+        const { buttonType, className, forceHover } = props;
         const theme = useThemeContext();
         const [css] = useStyletron();
 
@@ -89,6 +89,12 @@ export const Button = React.forwardRef(
             () => getButtonColors(buttonType, theme),
             [buttonType, theme]
         );
+
+        const hoverStyles = {
+            backgroundColor: hovered?.getCSSColor(1) || 'transparent',
+            borderColor: hoveredBorderColor?.getCSSColor(1) || 'transparent',
+            color: hoveredTextColor?.getCSSColor(1) || 'transparent',
+        };
 
         return (
             <button
@@ -108,16 +114,8 @@ export const Button = React.forwardRef(
                         fontSize: '120%',
                         fontFamily: theme.fontFamily,
                         fontWeight: 'bold',
-                        ':hover:not(:disabled)': {
-                            backgroundColor:
-                                hovered?.getCSSColor(1) || 'transparent',
-                            borderColor:
-                                hoveredBorderColor?.getCSSColor(1) ||
-                                'transparent',
-                            color:
-                                hoveredTextColor?.getCSSColor(1) ||
-                                'transparent',
-                        },
+                        ...(forceHover && hoverStyles),
+                        ':hover:not(:disabled)': hoverStyles,
                         ':disabled': {
                             backgroundColor:
                                 (buttonType !== ButtonType.wireframe &&

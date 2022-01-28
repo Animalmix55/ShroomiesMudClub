@@ -23,7 +23,10 @@ export const TokenDisplay = (props: Props): JSX.Element => {
     const theme = useThemeContext();
 
     return (
-        <TooltipHost content={meta && <TokenDetails meta={meta} />}>
+        <TooltipHost
+            className={css({ height: 'fit-content' })}
+            content={meta && <TokenDetails meta={meta} />}
+        >
             <div
                 onClick={(): void => onClick?.(id, !selected)}
                 role="button"
@@ -40,7 +43,7 @@ export const TokenDisplay = (props: Props): JSX.Element => {
                         backgroundColor: theme.backgroundColor.getCSSColor(
                             selected ? 1 : 0.7
                         ),
-                        color: theme.fontColors.normal.primary.getCSSColor(1),
+                        color: theme.fontColors.normal.secondary.getCSSColor(1),
                         borderRadius: '10px',
                         cursor: 'pointer',
                         ...(selected && {
@@ -64,7 +67,7 @@ export const TokenDisplay = (props: Props): JSX.Element => {
                             overflow: 'hidden',
                         })}
                         src={meta?.image}
-                        alt={`CWJ token id #${id}`}
+                        alt={`Shroomie token id #${id}`}
                     />
                 )}
                 {!meta && (
@@ -87,7 +90,7 @@ export const TokenDisplay = (props: Props): JSX.Element => {
                         marginTop: '10px',
                     })}
                 >
-                    {meta && meta?.name}
+                    {meta && (meta?.name || `Shroomie #${id}`)}
                     {!meta && `Loading #${id}`}
                 </div>
             </div>

@@ -2,64 +2,48 @@
     {
         "inputs": [
             {
+                "internalType": "uint16",
+                "name": "_maxSupply",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_mainCollectionSupply",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_publicTransactionMax",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_mintPrice",
+                "type": "uint256"
+            },
+            {
                 "internalType": "address",
-                "name": "devAddress",
+                "name": "_signer",
                 "type": "address"
             },
             {
-                "internalType": "uint16",
-                "name": "maxSupply",
-                "type": "uint16"
-            },
-            {
                 "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-            },
-            {
-                "internalType": "address",
-                "name": "signer",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "presaleMintStart",
+                "name": "_whitelistStart",
                 "type": "uint256"
             },
             {
                 "internalType": "uint256",
-                "name": "presaleMintEnd",
+                "name": "_whitelistEnd",
                 "type": "uint256"
-            },
-            {
-                "internalType": "uint16",
-                "name": "maxPresale",
-                "type": "uint16"
             },
             {
                 "internalType": "uint256",
-                "name": "publicMintStart",
+                "name": "_publicStart",
                 "type": "uint256"
-            },
-            {
-                "internalType": "uint16",
-                "name": "publicTransactionMax",
-                "type": "uint16"
             }
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "prod1",
-                "type": "uint256"
-            }
-        ],
-        "name": "PRBMath__MulDivFixedPointOverflow",
-        "type": "error"
     },
     {
         "anonymous": false,
@@ -117,25 +101,6 @@
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "previousDeveloper",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "newDeveloper",
-                "type": "address"
-            }
-        ],
-        "name": "DevelopershipTransferred",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
                 "name": "previousOwner",
                 "type": "address"
             },
@@ -147,25 +112,6 @@
             }
         ],
         "name": "OwnershipTransferred",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "Paid",
         "type": "event"
     },
     {
@@ -191,25 +137,6 @@
             }
         ],
         "name": "Transfer",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "recipient",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "Withdraw",
         "type": "event"
     },
     {
@@ -244,19 +171,6 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "developer",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
             }
         ],
         "stateMutability": "view",
@@ -308,12 +222,83 @@
     {
         "inputs": [
             {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "name": "isSpent",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "address",
                 "name": "",
                 "type": "address"
             }
         ],
         "name": "lastMintNonce",
+        "outputs": [
+            {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mainCollectionMinting",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mainCollectionSize",
+        "outputs": [
+            {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mainMinted",
+        "outputs": [
+            {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "maxSupply",
         "outputs": [
             {
                 "internalType": "uint16",
@@ -338,8 +323,14 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "minted",
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "name": "mintedInBatch",
         "outputs": [
             {
                 "internalType": "uint16",
@@ -397,34 +388,6 @@
     },
     {
         "inputs": [],
-        "name": "presaleMint",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "startDate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "endDate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint16",
-                "name": "totalMinted",
-                "type": "uint16"
-            },
-            {
-                "internalType": "uint16",
-                "name": "maxMinted",
-                "type": "uint16"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
         "name": "publicMint",
         "outputs": [
             {
@@ -439,13 +402,6 @@
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "renounceDevelopership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -507,6 +463,19 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "secondaryMinted",
+        "outputs": [
+            {
+                "internalType": "uint16",
+                "name": "",
+                "type": "uint16"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -557,48 +526,16 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "tokenURI",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "totalSupply",
         "outputs": [
             {
-                "internalType": "uint16",
+                "internalType": "uint256",
                 "name": "",
-                "type": "uint16"
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "newDeveloper",
-                "type": "address"
-            }
-        ],
-        "name": "transferDevelopership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -638,6 +575,24 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "whitelistMint",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "startDate",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "endDate",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "stateMutability": "payable",
         "type": "receive"
     },
@@ -645,11 +600,173 @@
         "inputs": [
             {
                 "internalType": "string",
-                "name": "uri",
+                "name": "_uri",
                 "type": "string"
             }
         ],
-        "name": "setBaseURI",
+        "name": "setMainBaseURI",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "_uri",
+                "type": "string"
+            }
+        ],
+        "name": "setSecondaryBaseURI",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_signer",
+                "type": "address"
+            }
+        ],
+        "name": "setSigner",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_startDate",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_endDate",
+                "type": "uint256"
+            }
+        ],
+        "name": "updateWhitelistMint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_maxPerTransaction",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_startDate",
+                "type": "uint256"
+            }
+        ],
+        "name": "updatePublicMint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_price",
+                "type": "uint256"
+            }
+        ],
+        "name": "updateMintPrice",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "_mainCollectionMinting",
+                "type": "bool"
+            }
+        ],
+        "name": "updateMainCollectionMinting",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_publicMaxPerTransaction",
+                "type": "uint16"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_publicStartDate",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_wlStartDate",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_wlEndDate",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_price",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "_mainCollectionMinting",
+                "type": "bool"
+            }
+        ],
+        "name": "batchMintUpdate",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16[]",
+                "name": "_amounts",
+                "type": "uint16[]"
+            },
+            {
+                "internalType": "address[]",
+                "name": "_addresses",
+                "type": "address[]"
+            },
+            {
+                "internalType": "bool",
+                "name": "_mainCollection",
+                "type": "bool"
+            }
+        ],
+        "name": "ownerMintTo",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_tokenId",
+                "type": "uint256"
+            }
+        ],
+        "name": "burn",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -662,25 +779,12 @@
                 "type": "uint256"
             }
         ],
-        "name": "burn",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "getPresaleMints",
+        "name": "tokenURI",
         "outputs": [
             {
-                "internalType": "uint16",
+                "internalType": "string",
                 "name": "",
-                "type": "uint16"
+                "type": "string"
             }
         ],
         "stateMutability": "view",
@@ -689,76 +793,92 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
+                "internalType": "address",
+                "name": "_user",
+                "type": "address"
             }
         ],
-        "name": "updateMintPrice",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
+        "name": "getUserWhitelistMints",
+        "outputs": [
             {
-                "internalType": "uint256",
-                "name": "startDate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "endDate",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint16",
-                "name": "maxMinted",
-                "type": "uint16"
+                "components": [
+                    {
+                        "internalType": "uint256",
+                        "name": "mainCollection",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "secondaryCollection",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct Shroomies.WhitelistMinted",
+                "name": "",
+                "type": "tuple"
             }
         ],
-        "name": "updatePresaleMint",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint16",
-                "name": "maxPerTransaction",
-                "type": "uint16"
-            },
-            {
-                "internalType": "uint256",
-                "name": "startDate",
-                "type": "uint256"
-            }
-        ],
-        "name": "updatePublicMint",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
             {
                 "internalType": "address",
-                "name": "minter",
+                "name": "_minter",
                 "type": "address"
             },
             {
                 "internalType": "uint16",
-                "name": "quantity",
+                "name": "_quantity",
                 "type": "uint16"
             },
             {
+                "internalType": "bool",
+                "name": "_mainCollection",
+                "type": "bool"
+            },
+            {
                 "internalType": "uint16",
-                "name": "nonce",
+                "name": "_nonce",
                 "type": "uint16"
             }
         ],
-        "name": "getPremintHash",
+        "name": "getUserWhitelistHash",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_minter",
+                "type": "address"
+            },
+            {
+                "internalType": "string",
+                "name": "_batch",
+                "type": "string"
+            },
+            {
+                "internalType": "bool",
+                "name": "_mainCollection",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_batchSize",
+                "type": "uint16"
+            }
+        ],
+        "name": "getWhitelistPasswordHash",
         "outputs": [
             {
                 "internalType": "bytes32",
@@ -773,21 +893,26 @@
         "inputs": [
             {
                 "internalType": "uint16",
-                "name": "quantity",
+                "name": "_quantity",
                 "type": "uint16"
             },
             {
+                "internalType": "bool",
+                "name": "_mainCollection",
+                "type": "bool"
+            },
+            {
                 "internalType": "uint16",
-                "name": "nonce",
+                "name": "_nonce",
                 "type": "uint16"
             },
             {
                 "internalType": "bytes",
-                "name": "signature",
+                "name": "_signature",
                 "type": "bytes"
             }
         ],
-        "name": "premint",
+        "name": "userWhitelistMint",
         "outputs": [],
         "stateMutability": "payable",
         "type": "function"
@@ -796,7 +921,53 @@
         "inputs": [
             {
                 "internalType": "uint16",
-                "name": "quantity",
+                "name": "_quantity",
+                "type": "uint16"
+            },
+            {
+                "internalType": "bool",
+                "name": "_mainCollection",
+                "type": "bool"
+            },
+            {
+                "internalType": "string",
+                "name": "_batch",
+                "type": "string"
+            },
+            {
+                "internalType": "uint16",
+                "name": "_batchSize",
+                "type": "uint16"
+            },
+            {
+                "internalType": "bytes",
+                "name": "_signature",
+                "type": "bytes"
+            }
+        ],
+        "name": "batchWhitelistMint",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16[]",
+                "name": "heldIds",
+                "type": "uint16[]"
+            }
+        ],
+        "name": "secondaryHolderWhitelistMint",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint16",
+                "name": "_quantity",
                 "type": "uint16"
             }
         ],
@@ -806,40 +977,14 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "developerAllotment",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "amount",
+                "name": "_amount",
                 "type": "uint256"
             }
         ],
-        "name": "withdrawOwner",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "withdrawDeveloper",
+        "name": "withdraw",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

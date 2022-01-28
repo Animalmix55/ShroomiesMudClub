@@ -4,7 +4,6 @@ import { useContractContext } from '../contexts/ContractContext';
 interface PresaleMintDetails {
     startDate: number;
     endDate: number;
-    totalMinted: number;
 }
 
 interface PublicDetails {
@@ -29,7 +28,6 @@ export function useMintDetails(
     >({
         startDate: Infinity,
         endDate: Infinity,
-        totalMinted: 0,
         maxPerTransaction: 0,
     });
 
@@ -41,12 +39,11 @@ export function useMintDetails(
                 .whitelistMint()
                 .call()
                 .then((fm) => {
-                    const { startDate, endDate, totalMinted } = fm;
+                    const { startDate, endDate } = fm;
                     setDetails({
                         maxPerTransaction: 0,
                         startDate: Number(startDate),
                         endDate: Number(endDate),
-                        totalMinted: Number(totalMinted),
                     });
                 });
 
@@ -62,7 +59,6 @@ export function useMintDetails(
                     startDate: Number(startDate),
                     maxPerTransaction: Number(maxPerTransaction),
                     endDate: 0,
-                    totalMinted: 0,
                 });
             });
     }, [contract, sale]);
