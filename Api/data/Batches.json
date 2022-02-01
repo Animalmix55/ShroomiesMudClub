@@ -1,0 +1,9 @@
+[
+    {
+        "id": "TEST",
+        "password": "TEST",
+        "mainCollection": false,
+        "size": 50,
+        "validityPeriod": 3600
+    }
+]

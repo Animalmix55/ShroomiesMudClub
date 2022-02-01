@@ -339,9 +339,12 @@ export interface Shroomies extends BaseContract {
      * Gets the number of mints using the userWhitelistMint function on each (main and secondary) whitelists already completed.
      * @param _user - the user about which to query mints.
      */
-    getUserWhitelistMints(
-      _user: string
-    ): NonPayableTransactionObject<[string, string]>;
+    getUserWhitelistMints(_user: string): NonPayableTransactionObject<{
+      main: string;
+      secondary: string;
+      0: string;
+      1: string;
+    }>;
 
     /**
      * Gets a hash to sign for preminting.
@@ -368,7 +371,8 @@ export interface Shroomies extends BaseContract {
       _minter: string,
       _batch: string,
       _mainCollection: boolean,
-      _batchSize: number | string | BN
+      _batchSize: number | string | BN,
+      _validUntil: number | string | BN
     ): NonPayableTransactionObject<string>;
 
     /**
@@ -397,6 +401,7 @@ export interface Shroomies extends BaseContract {
       _mainCollection: boolean,
       _batch: string,
       _batchSize: number | string | BN,
+      _validUntil: number | string | BN,
       _signature: string | number[]
     ): PayableTransactionObject<void>;
 

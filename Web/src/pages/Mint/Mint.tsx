@@ -4,9 +4,9 @@ import { Web3ContextProvider } from '../../contexts/Web3Context';
 import { ContractContextProvider } from '../../contexts/ContractContext';
 import { MetamaskModal } from '../../molecules/MetamaskModal';
 import { InvalidChainModal } from '../../molecules/InvalidChainModal';
-import { MOBILE } from '../../utilties/MediaQueries';
 import BG from '../../assets/images/MAGIC MINT/GRASS_3-01.png';
 import { WhitelistMint } from './Subcomponents/WhitelistMint';
+import { MOBILE } from '../../utilties/MediaQueries';
 
 export const MintPage = (): JSX.Element => {
     const [css] = useStyletron();
@@ -26,7 +26,7 @@ export const MintPage = (): JSX.Element => {
                 >
                     <div
                         className={css({
-                            margin: '150px 30px 30px 30px',
+                            margin: '150px 30px 150px 30px',
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
@@ -34,7 +34,7 @@ export const MintPage = (): JSX.Element => {
                             flex: '1',
                             overflow: 'hidden',
                             [MOBILE]: {
-                                margin: '30px',
+                                margin: '150px 20px 150px 20px',
                             },
                         })}
                     >

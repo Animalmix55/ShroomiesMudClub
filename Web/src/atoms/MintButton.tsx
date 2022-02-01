@@ -69,7 +69,8 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
         const { signature, nonce } = await getMintSignature(
             api,
             amount,
-            accounts[0]
+            accounts[0],
+            mainMint
         );
 
         return [amount, mainMint, nonce, signature];
@@ -82,7 +83,7 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
         if (!accounts[0]) throw new Error('Not logged in');
         if (!batchSecret) throw new Error('Missing batch secret');
 
-        const { signature, batchSize, mainCollection } =
+        const { signature, batchSize, mainCollection, validUntil } =
             await getBatchSignature(api, batchSecret, accounts[0]);
 
         if (mainCollection !== mainMint)
@@ -93,9 +94,12 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
             mainMint,
             batchSecret.split('-')[0],
             batchSize,
+            validUntil,
             signature,
         ];
     }, [accounts, amount, api, batchSecret, contract, mainMint]);
+
+    if (!contract) return <div>Missing contract</div>;
 
     if (sale === 'public') {
         return (

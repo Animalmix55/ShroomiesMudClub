@@ -81,8 +81,8 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
     // ---------------------- WHITELIST VARIABLES -------------------------
 
     struct WhitelistMinted {
-        uint256 mainCollection;
-        uint256 secondaryCollection;
+        uint16 mainCollection;
+        uint16 secondaryCollection;
     }
 
     struct WhitelistedMint {
@@ -358,9 +358,10 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
     function getUserWhitelistMints(address _user)
         external
         view
-        returns (WhitelistMinted memory)
+        returns (uint16 main, uint16 secondary)
     {
-        return whitelistMint.userMinted[_user];
+        main = whitelistMint.userMinted[_user].mainCollection;
+        secondary = whitelistMint.userMinted[_user].secondaryCollection;
     }
 
     /**
@@ -393,11 +394,12 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         address _minter,
         string calldata _batch,
         bool _mainCollection,
-        uint16 _batchSize
+        uint16 _batchSize,
+        uint256 _validUntil
     ) external pure returns (bytes32) {
         return
             VerifySignature.getMessageHash(
-                abi.encodePacked(_minter, _batch, _mainCollection, _batchSize)
+                abi.encodePacked(_minter, _batch, _mainCollection, _batchSize, _validUntil)
             );
     }
 
@@ -464,10 +466,12 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
         bool _mainCollection,
         string calldata _batch,
         uint16 _batchSize,
+        uint256 _validUntil,
         bytes calldata _signature
     ) public payable nonReentrant {
         require(mintPrice * _quantity == msg.value, "Bad value");
         require(mintedInBatch[_batch] + _quantity <= _batchSize, "batch full");
+        require(_validUntil >= block.timestamp, "Tx expired");
         require(
             VerifySignature.verify(
                 mintSigner,
@@ -475,7 +479,8 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
                     msg.sender,
                     _batch,
                     _mainCollection,
-                    _batchSize
+                    _batchSize,
+                    _validUntil
                 ),
                 _signature
             ),

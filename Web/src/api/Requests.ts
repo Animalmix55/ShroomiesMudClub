@@ -9,12 +9,14 @@ export interface TimeFrame {
 export const getMintSignature = async (
     api: string,
     quantity: number,
-    address: string
+    address: string,
+    mainMint: boolean
 ): Promise<{ signature: string; nonce: number }> => {
     const url = `${api}/mint.php`;
     const result = await axios.post(url, {
         quantity,
         address,
+        mainMint,
     });
 
     return result.data as never;
@@ -28,6 +30,7 @@ export const getBatchSignature = async (
     signature: string;
     batchSize: number;
     mainCollection: boolean;
+    validUntil: number;
 }> => {
     const url = `${api}/mint.php`;
     const result = await axios.post(url, {
@@ -40,13 +43,10 @@ export const getBatchSignature = async (
 
 export const getWhitelist = async (
     api: string,
-    address: string,
-    isMainCollection: boolean
-): Promise<number> => {
-    const url = `${api}/whitelist.php?address=${address}&mainCollection=${String(
-        isMainCollection
-    )}`;
+    address: string
+): Promise<{ main: number; secondary: number }> => {
+    const url = `${api}/whitelist.php?address=${address}`;
     const result = await axios.get(url);
 
-    return Number(result.data);
+    return result.data;
 };

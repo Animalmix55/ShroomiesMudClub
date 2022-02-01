@@ -20,6 +20,7 @@ interface BatchMintTransaction {
     mainCollection: boolean;
     batchSize: number;
     minter: string;
+    validUntil: number;
 }
 
 const getShroomiesInstance = async (
@@ -81,13 +82,15 @@ const getBatchWhitelistSignedMessage =
         signer: ReturnType<Web3['eth']['accounts']['create']>
     ) =>
     async (trans: BatchMintTransaction) => {
-        const { minter, batchId, mainCollection, batchSize } = trans;
+        const { minter, batchId, mainCollection, batchSize, validUntil } =
+            trans;
 
         const messageHash = await contract.getWhitelistPasswordHash(
             minter,
             batchId,
             mainCollection,
-            batchSize
+            batchSize,
+            validUntil
         );
         return signer.sign(messageHash);
     };
@@ -592,13 +595,13 @@ contract('Shroomies Mud Club', (accounts) => {
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).mainCollection.toString(),
+            )[0].toString(),
             '0'
         );
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).secondaryCollection.toString(),
+            )[1].toString(),
             '0'
         );
 
@@ -620,13 +623,13 @@ contract('Shroomies Mud Club', (accounts) => {
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).mainCollection.toString(),
+            )[0].toString(),
             '0'
         );
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).secondaryCollection.toString(),
+            )[1].toString(),
             secondaryMintTransaction.quantity.toString()
         );
 
@@ -648,13 +651,13 @@ contract('Shroomies Mud Club', (accounts) => {
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).mainCollection.toString(),
+            )[0].toString(),
             mainMintTransaction.quantity.toString()
         );
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).secondaryCollection.toString(),
+            )[1].toString(),
             secondaryMintTransaction.quantity.toString()
         );
     });
@@ -704,6 +707,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const { signature } = await signTransaction(batch);
@@ -1230,13 +1234,13 @@ contract('Shroomies Mud Club', (accounts) => {
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).secondaryCollection.toString(),
+            )[1].toString(),
             secondaryMintTransaction.quantity.toString()
         );
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).mainCollection.toString(),
+            )[0].toString(),
             mainMintTransaction.quantity.toString()
         );
     });
@@ -1260,6 +1264,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1272,6 +1277,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: accounts[2],
@@ -1287,6 +1293,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 !batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: accounts[1],
@@ -1302,6 +1309,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 `${batch.batchId}-new`,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: accounts[1],
@@ -1317,6 +1325,23 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize + 1,
+                batch.validUntil,
+                signature.signature,
+                {
+                    from: accounts[1],
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+
+        // wrong valid time
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                batch.validUntil + 1,
                 signature.signature,
                 {
                     from: accounts[1],
@@ -1343,6 +1368,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1354,6 +1380,46 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
+                signature.signature,
+                {
+                    from: batch.minter,
+                    value: String(mintPrice * quantity),
+                }
+            )
+        );
+    });
+
+    it('calls batchWhitelistMint (fails due to expired validity)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance, signer, mintPrice } =
+            await getShroomiesInstance(now, later, now);
+
+        const signTransaction = getBatchWhitelistSignedMessage(
+            shroomiesInstance,
+            signer
+        );
+
+        const batch: BatchMintTransaction = {
+            batchId: 'test',
+            batchSize: 100,
+            mainCollection: false,
+            minter: accounts[1],
+            validUntil: 1,
+        };
+
+        const signature = await signTransaction(batch);
+        const quantity = 10;
+
+        await truffleAssert.fails(
+            shroomiesInstance.batchWhitelistMint(
+                quantity,
+                batch.mainCollection,
+                batch.batchId,
+                batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1380,6 +1446,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: true, // inactive
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         let signature = await signTransaction(batch);
@@ -1391,6 +1458,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1406,6 +1474,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false, // inactive
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         signature = await signTransaction(batch);
@@ -1416,6 +1485,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1442,6 +1512,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1453,6 +1524,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1479,6 +1551,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1490,6 +1563,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batch.mainCollection,
             batch.batchId,
             batch.batchSize,
+            batch.validUntil,
             signature.signature,
             {
                 from: batch.minter,
@@ -1506,6 +1580,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1535,6 +1610,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: true,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1546,6 +1622,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batch.mainCollection,
             batch.batchId,
             batch.batchSize,
+            batch.validUntil,
             signature.signature,
             {
                 from: batch.minter,
@@ -1562,6 +1639,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1588,6 +1666,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1599,6 +1678,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1627,6 +1707,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: true,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1638,6 +1719,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1666,6 +1748,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 10,
             mainCollection: true,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const signature = await signTransaction(batch);
@@ -1677,6 +1760,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1692,6 +1776,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batch.mainCollection,
             batch.batchId,
             batch.batchSize,
+            batch.validUntil,
             signature.signature,
             {
                 from: batch.minter,
@@ -1711,6 +1796,7 @@ contract('Shroomies Mud Club', (accounts) => {
                 batch.mainCollection,
                 batch.batchId,
                 batch.batchSize,
+                batch.validUntil,
                 signature.signature,
                 {
                     from: batch.minter,
@@ -1737,6 +1823,7 @@ contract('Shroomies Mud Club', (accounts) => {
             batchSize: 100,
             mainCollection: false,
             minter: accounts[1],
+            validUntil: 2842753550,
         };
 
         const mainMintBatch: BatchMintTransaction = {
@@ -1754,6 +1841,7 @@ contract('Shroomies Mud Club', (accounts) => {
             secondaryMintBatch.mainCollection,
             secondaryMintBatch.batchId,
             secondaryMintBatch.batchSize,
+            secondaryMintBatch.validUntil,
             secondarySignature.signature,
             {
                 from: secondaryMintBatch.minter,
@@ -1786,6 +1874,7 @@ contract('Shroomies Mud Club', (accounts) => {
             mainMintBatch.mainCollection,
             mainMintBatch.batchId,
             mainMintBatch.batchSize,
+            mainMintBatch.validUntil,
             mainSignature.signature,
             {
                 from: mainMintBatch.minter,
@@ -1816,13 +1905,13 @@ contract('Shroomies Mud Club', (accounts) => {
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).secondaryCollection.toString(),
+            )[1].toString(),
             '0'
         );
         assert.equal(
             (
                 await shroomiesInstance.getUserWhitelistMints(accounts[1])
-            ).mainCollection.toString(),
+            )[0].toString(),
             '0'
         );
     });
