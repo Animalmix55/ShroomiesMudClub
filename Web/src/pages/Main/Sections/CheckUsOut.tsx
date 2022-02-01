@@ -9,6 +9,7 @@ import Shroom5 from '../../../assets/images/CHECK US OUT/CHECK5.jpg';
 import Shroom6 from '../../../assets/images/CHECK US OUT/CHECK6.jpg';
 import Shroom7 from '../../../assets/images/CHECK US OUT/CHECK7.jpg';
 import Shroom8 from '../../../assets/images/CHECK US OUT/CHECK8.jpg';
+import Shroom9 from '../../../assets/images/CHECK US OUT/CHECK9.png';
 
 export const CheckUsOutSection = (): JSX.Element => {
     const [css] = useStyletron();
@@ -56,10 +57,15 @@ export const CheckUsOutSection = (): JSX.Element => {
                     <img src={Shroom7} alt="Shroom" className={imageClass} />
                     <img src={Shroom4} alt="Shroom" className={imageClass} />
                     <img src={Shroom3} alt="Shroom" className={imageClass} />
+                    <img
+                        src={Shroom9}
+                        alt="Night Shroom"
+                        className={imageClass}
+                    />
                     <img src={Shroom5} alt="Shroom" className={imageClass} />
                     <img src={Shroom6} alt="Shroom" className={imageClass} />
-                    <img src={Shroom1} alt="Shroom" className={imageClass} />
                     <img src={Shroom8} alt="Shroom" className={imageClass} />
+                    <img src={Shroom1} alt="Shroom" className={imageClass} />
                 </div>
             </div>
         </div>

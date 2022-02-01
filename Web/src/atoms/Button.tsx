@@ -123,7 +123,7 @@ export const Button = React.forwardRef(
                                 'transparent',
                             borderColor:
                                 disabledColor?.getCSSColor(1) || 'transparent',
-                            color: textColor?.getCSSColor(0.7) || 'transparent',
+                            color: textColor?.getCSSColor(0.4) || 'transparent',
                             cursor: 'not-allowed',
                         },
                     })

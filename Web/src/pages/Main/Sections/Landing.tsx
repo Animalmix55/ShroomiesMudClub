@@ -52,6 +52,8 @@ export const Landing = (): JSX.Element => {
                 className={css({
                     maxWidth: '1400px',
                     width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
                 })}
             >
                 <img
@@ -74,7 +76,7 @@ export const Landing = (): JSX.Element => {
                         [MOBILE]: {
                             display: 'block',
                         },
-                        width: '100%',
+                        width: '110%',
                         height: 'auto',
                     })}
                 />

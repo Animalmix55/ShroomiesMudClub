@@ -52,7 +52,7 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
             buttonType={ButtonType.primary}
             onClick={s.onClick}
         >
-            {s.meta}
+            {String(s.meta)}
         </Button>
     ));
 

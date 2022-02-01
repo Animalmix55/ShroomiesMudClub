@@ -72,15 +72,15 @@ export const MintNightShroomsSection = (): JSX.Element => {
                     </div>
                     <div className={css({ margin: '10px' })}>
                         <div className={titleStyle}>Traits:</div>
-                        <div className={bodyStyle}>180+</div>
+                        <div className={bodyStyle}>220</div>
                     </div>
                     <div className={css({ margin: '10px' })}>
                         <div className={titleStyle}>Trait Categories:</div>
-                        <div className={bodyStyle}>11</div>
+                        <div className={bodyStyle}>14</div>
                     </div>
                     <div className={css({ margin: '10px' })}>
                         <div className={titleStyle}>Price:</div>
-                        <div className={bodyStyle}>0.03 ETH</div>
+                        <div className={bodyStyle}>0.038 ETH</div>
                     </div>
                 </div>
             </div>

@@ -12,7 +12,6 @@ import {
     ShroomieContextType,
 } from './contexts/ShroomieContext';
 import { defaultTheme, ThemeContextProvider } from './contexts/ThemeContext';
-import { TransactionContextProvider } from './contexts/TransactionContext';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/global.css';
 import ShroomRouter from './routing/ShroomRouter';
@@ -54,32 +53,30 @@ const Root = (): JSX.Element => {
     return (
         <MuiThemeProvider theme={theme}>
             <ScrollingProvider>
-                <TransactionContextProvider>
-                    <Provider value={styletron}>
-                        <ThemeContextProvider value={defaultTheme}>
-                            <HashRouter>
-                                <ShroomieContextProvider
-                                    value={{
-                                        openseaUrl,
-                                        api,
-                                        etherscanUrl,
-                                        chainId,
-                                        tokenContractAddress,
-                                        discordUrl,
-                                        twitterUrl,
-                                    }}
-                                >
-                                    <>
-                                        <Header />
-                                        <ToastContainer position="bottom-left" />
-                                        <ShroomRouter />
-                                        <Footer />
-                                    </>
-                                </ShroomieContextProvider>
-                            </HashRouter>
-                        </ThemeContextProvider>
-                    </Provider>
-                </TransactionContextProvider>
+                <Provider value={styletron}>
+                    <ThemeContextProvider value={defaultTheme}>
+                        <HashRouter>
+                            <ShroomieContextProvider
+                                value={{
+                                    openseaUrl,
+                                    api,
+                                    etherscanUrl,
+                                    chainId,
+                                    tokenContractAddress,
+                                    discordUrl,
+                                    twitterUrl,
+                                }}
+                            >
+                                <>
+                                    <Header />
+                                    <ToastContainer position="bottom-left" />
+                                    <ShroomRouter />
+                                    <Footer />
+                                </>
+                            </ShroomieContextProvider>
+                        </HashRouter>
+                    </ThemeContextProvider>
+                </Provider>
             </ScrollingProvider>
         </MuiThemeProvider>
     );

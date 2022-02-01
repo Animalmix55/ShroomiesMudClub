@@ -76,8 +76,8 @@ export const WelcomeSection = (): JSX.Element => {
                         Bleweit, Indigo Milk Cap, Golden Scruffy, Magic
                         Mushroom, and more! Our primary focus is to raise
                         awareness of the underrated benefits of mushrooms for
-                        the mind, body, and vital to environmental ecosystems.
-                        Join us!
+                        the mind, body, and our environmental ecosystems. Join
+                        us!
                     </div>
                 </div>
             </div>

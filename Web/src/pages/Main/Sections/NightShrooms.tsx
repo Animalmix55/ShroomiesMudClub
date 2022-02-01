@@ -52,9 +52,9 @@ export const NightShroomSection = (): JSX.Element => {
                         maxWidth: '700px',
                     })}
                 >
-                    The Night Shrooms are a limited edition, pre-release,
-                    Shroomie drop with tons of community utility - plus receive
-                    a FREE mint!
+                    The Night Shrooms are a limited edition drop ahead of the
+                    main collection that rewards early supporters with tons of
+                    utility - plus a FREE Shroomie mint!
                 </div>
                 <div
                     className={css({
@@ -66,16 +66,15 @@ export const NightShroomSection = (): JSX.Element => {
                     })}
                 >
                     <ul className={css({ margin: '20px' })}>
-                        <li>Free mint of the main Shroomies drop</li>
+                        <li>One FREE mint of the main Shroomies drop</li>
                         <li>Presale access to main drop</li>
-                        <li>Part of our physical game design committee</li>
                         <li>Special discord role + exclusive giveaways</li>
+                        <li>Priority access to whitelist from partners</li>
                     </ul>
                     <ul className={css({ margin: '20px' })}>
-                        <li>Priority access to whitelist from partners</li>
                         <li>Free mints on future drops</li>
                         <li>ONLY 888 will exist ever!</li>
-                        <li>Included in the main collection (high rarity)</li>
+                        <li>Included in the main collection</li>
                     </ul>
                 </div>
             </div>

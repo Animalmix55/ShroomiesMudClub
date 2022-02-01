@@ -16,11 +16,16 @@ export const useMintStatus = (): MintStatus => {
     const { startDate, endDate } = useMintDetails('presale');
 
     React.useEffect(() => {
+        if (!tokenContract) {
+            setMainMinting(false);
+            return;
+        }
+
         tokenContract.methods
             .mainCollectionMinting()
             .call()
             .then(setMainMinting);
-    }, [tokenContract.methods]);
+    }, [tokenContract]);
 
     const isWhitelist = React.useMemo(
         () => time > startDate && time < endDate,

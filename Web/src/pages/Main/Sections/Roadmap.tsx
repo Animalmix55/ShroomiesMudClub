@@ -31,7 +31,7 @@ export const RoadmapSection = (): JSX.Element => {
             <div
                 className={css({
                     width: '100%',
-                    maxWidth: '1000px',
+                    maxWidth: '700px',
                 })}
             >
                 <img

@@ -63,13 +63,13 @@ export const OurTeamSection = (): JSX.Element => {
                                 marginBottom: '20px',
                             })}
                         >
-                            THE PIXEL MAVEN
+                            HELLA SHROOM
                         </div>
                         <div className={css({ marginBottom: '20px' })}>
                             Co-Creator, and Design Director, illustrator and
                             artist. 20 years in media design across the digital
                             and physical space and an early metaverse
-                            evangelist. 80’s punk maven. Boy mom. Dog mom.
+                            evangelist. ‘80s punk maven. Boy mom. Dog mom.
                         </div>
                     </div>
                     <div

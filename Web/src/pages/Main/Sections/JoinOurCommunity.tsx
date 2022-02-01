@@ -52,27 +52,27 @@ export const JoinOurCommunity = (): JSX.Element => {
                         },
                     })}
                 >
-                    Join the <b>#SHROOMIESMUDCLUB</b> a hub for education,
-                    awareness giving back.
+                    Join the <b>#SHROOMIESMUDCLUB</b>: a hub for education,
+                    awareness, & giving back.
                 </div>
                 <br />
                 <div>
                     <div>
                         We are bringing the FUNGI WORLD of mushroom experts,
-                        enthusiasts and communities together on one server!
+                        enthusiasts, and communities together on one server!
                         Check out our Discord featuring the world’s leading
-                        mycologists and organizations related to Fungi with
+                        mycologists and organizations related to fungi with
                         weekly AMA, Twitter Spaces, and dedicated channels
-                        communities focused on fungi topics, including cooking,
-                        health, and foraging.
+                        focused on fungi topics, including cooking, health,
+                        foraging, and more!
                     </div>
                     <br />
                     <div>
                         Get the latest announcements about community,
-                        partnerships, physical game development, contests,
-                        giveaways, and more! Holders of Shroomies Mud Club NFT’s
-                        get special community privileges! Learn more on our
-                        Discord server.
+                        partnerships, physical game development, contests, and
+                        giveaways! Holders of Shroomies Mud Club NFTs get
+                        special community privileges! Learn more on our Discord
+                        server.
                     </div>
                 </div>
                 <div

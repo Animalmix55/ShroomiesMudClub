@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStyletron } from 'styletron-react';
 import { useThemeContext } from '../../../contexts/ThemeContext';
-import Shroomies from '../../../assets/images/SHROOMIES/SHROOMIE_MAIN_IMG4.png';
+import Shroomies from '../../../assets/images/SHROOMIES/SHROOMIE_MAIN_IMG_V3.png';
 import { MOBILE } from '../../../utilties/MediaQueries';
 
 export const ShroomiesSection = (): JSX.Element => {
@@ -54,7 +54,7 @@ export const ShroomiesSection = (): JSX.Element => {
                         fontWeight: 'bold',
                     })}
                 >
-                    Coming Soon! Main Drop Q1 2022!
+                    Coming Soon!
                 </div>
                 <div
                     className={css({
@@ -62,9 +62,10 @@ export const ShroomiesSection = (): JSX.Element => {
                         marginBottom: '30px',
                     })}
                 >
-                    Welcome to Shroomies Mud Club! Here you find curiously
-                    evolving troops of unearthed magical, edible, walking,
-                    talking, and sometimes roguish little mushrooms.
+                    The main collection of Shroomies Mud Club - powerful
+                    Shroomies from almost 400 traits! Holders of Shroomies Mud
+                    Club NFTs will enter a fantastic world of community
+                    building, education, and games!
                 </div>
             </div>
             <div
