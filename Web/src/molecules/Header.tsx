@@ -119,7 +119,8 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
 
 export const Header = (): JSX.Element => {
     const [scrollPos, scrollingUp] = useScrollPosition();
-    const { twitterUrl, discordUrl } = useShroomieContext();
+    const { twitterUrl, discordUrl, tokenContractAddress } =
+        useShroomieContext();
     const theme = useThemeContext();
 
     const [css] = useStyletron();
@@ -207,6 +208,7 @@ export const Header = (): JSX.Element => {
                     },
                 })}
                 onClick={(): void => history.push(Page.Mint)}
+                disabled={!tokenContractAddress}
             >
                 <div
                     className={css({
