@@ -1,7 +1,8 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { Spinner, SpinnerSize } from '@fluentui/react';
+import { Icon, Spinner, SpinnerSize } from '@fluentui/react';
 import React from 'react';
 import { toast } from 'react-toastify';
+import { useStyletron } from 'styletron-react';
 import { PromiEvent, TransactionReceipt } from 'web3-core';
 import { useShroomieContext } from '../contexts/ShroomieContext';
 import { BaseContract, NonPayableTx, PayableTx } from '../models/types';
@@ -41,6 +42,7 @@ export const TransactionButton = <
     const { etherscanUrl } = useShroomieContext();
     const [pending, setPending] = React.useState(false);
     const [hash, setHash] = React.useState('');
+    const [css] = useStyletron();
 
     const onClick: React.MouseEventHandler<HTMLButtonElement> =
         React.useCallback(
@@ -80,14 +82,41 @@ export const TransactionButton = <
                 ) as PromiEvent<TransactionReceipt>;
 
                 onTransact?.(trans);
-                trans.finally(() => {
-                    setPending(false);
-                    setHash('');
-                });
+                trans
+                    .finally(() => {
+                        setPending(false);
+                        setHash('');
+                    })
+                    .then(() =>
+                        toast(
+                            <div
+                                className={css({
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                })}
+                            >
+                                <span>Transaction Succeeded</span>
+                                <Icon
+                                    className={css({ marginLeft: '5px' })}
+                                    iconName="OpenInNewWindow"
+                                />
+                            </div>,
+                            {
+                                type: 'success',
+                                onClick: () =>
+                                    window.open(
+                                        `${etherscanUrl}/tx/${hash}`,
+                                        '_blank'
+                                    ),
+                            }
+                        )
+                    );
                 trans.on('transactionHash', setHash);
             },
             [
-                contract,
+                contract.methods,
+                css,
                 etherscanUrl,
                 hash,
                 method,

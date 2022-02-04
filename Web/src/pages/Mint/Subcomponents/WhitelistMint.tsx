@@ -20,55 +20,15 @@ import MintButton, { MintButtonProps } from '../../../atoms/MintButton';
 import NightShrooms from '../../../assets/images/MINTPAGE/NIGHT SHROOMS/NIGHT_SHROOM_MINTPAGE2.gif';
 import useWeb3 from '../../../contexts/Web3Context';
 import useBatchSignatureGetter from '../../../hooks/useBatchSignatureGetter';
-import AddButton from '../../../assets/images/MINTPAGE/NIGHT SHROOMS/PLUS_GREEN.png';
-import AddButtonDisabled from '../../../assets/images/MINTPAGE/NIGHT SHROOMS/PLUS_GREY.png';
-import MinusButton from '../../../assets/images/MINTPAGE/NIGHT SHROOMS/MINUS_ORANGE.png';
-import MinusButtonDisabled from '../../../assets/images/MINTPAGE/NIGHT SHROOMS/MINUS_GREY.png';
 import { useBatchSignature } from '../../../hooks/useBatchSignature';
 import useAlreadyMintedInBatch from '../../../hooks/useAlreadyMintedInBatch';
 import { useShroomieContext } from '../../../contexts/ShroomieContext';
 import { MOBILE } from '../../../utilties/MediaQueries';
-
-export const MintQuantityButton = ({
-    add,
-    onClick,
-    disabled,
-    className,
-}: {
-    add: boolean;
-    onClick: () => void;
-    className?: string;
-    disabled?: boolean;
-}): JSX.Element => {
-    const [css] = useStyletron();
-    const buttonImage = React.useMemo(() => {
-        if (add) {
-            if (disabled) return AddButtonDisabled;
-            return AddButton;
-        }
-
-        if (disabled) return MinusButtonDisabled;
-        return MinusButton;
-    }, [add, disabled]);
-
-    return (
-        <button
-            onClick={onClick}
-            disabled={disabled}
-            type="button"
-            className={ClassNameBuilder(
-                className,
-                css({ all: 'unset', cursor: 'pointer !important' })
-            )}
-        >
-            <img
-                src={buttonImage}
-                className={css({ width: '100%', height: 'auto' })}
-                alt={add ? 'Plus' : 'Minus'}
-            />
-        </button>
-    );
-};
+import MintWrapper from './MintWrapper';
+import useMintDetails from '../../../hooks/useMintDetails';
+import useCurrentTime from '../../../hooks/useCurrentTime';
+import FormatTimeOffset from '../../../utilties/TimeFormatter';
+import MintQuantityButton from '../../../atoms/MintQuantityButton';
 
 interface AdditionalInfo {
     spendingIds?: number[];
@@ -603,9 +563,14 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
     const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(
         {}
     );
+    const { startDate, endDate } = useMintDetails('presale');
+    const time = useCurrentTime();
     const [tx, setTx] = React.useState<PromiEvent<TransactionReceipt>>();
     const theme = useThemeContext();
     const { isMainMint } = useMintStatus();
+
+    const { main: mainWhitelistCount, secondary: secondaryWhitelistCount } =
+        useWhitelistCounts();
 
     const steps = React.useMemo(
         () => [
@@ -619,21 +584,10 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
         [type]
     );
 
+    if (endDate < time) return <></>; // nothing
+
     return (
-        <div
-            className={ClassNameBuilder(
-                className,
-                css({
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: theme.backgroundColor.getCSSColor(0.2),
-                    boxSizing: 'border-box',
-                    padding: '40px',
-                    width: '100%',
-                    maxWidth: '500px',
-                })
-            )}
-        >
+        <MintWrapper className={className}>
             {step > 0 && step < steps.length - 1 && (
                 <div>
                     <Button
@@ -658,78 +612,125 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
                 })}
             >
                 Whitelist
+                <span
+                    className={css({ fontSize: '10px', fontWeight: 'normal' })}
+                >
+                    {endDate >= time && startDate <= time && (
+                        <div>Ending in {FormatTimeOffset(endDate - time)}</div>
+                    )}
+                </span>
             </div>
-            <Box sx={{ width: '100%', marginBottom: '20px' }}>
-                <Stepper activeStep={step} alternativeLabel>
-                    {steps.map((label, i) => (
-                        <Step
-                            onClick={(): void => setStep((j) => Math.min(i, j))}
-                            className={css({ cursor: 'pointer' })}
-                            key={label}
-                            tabIndex={0}
-                        >
-                            <StepLabel
-                                componentsProps={{
-                                    label: {
-                                        className: css({
-                                            textAlign: 'center',
-                                            color: theme.fontColors.normal.secondary.getCSSColor(
-                                                1
-                                            ),
-                                        }),
-                                    },
+            {startDate > time && (
+                <div
+                    className={css({
+                        color: theme.fontColors.normal.secondary.getCSSColor(1),
+                    })}
+                >
+                    <div
+                        className={css({
+                            fontWeight: 'bold',
+                            fontSize: '30px',
+                            textAlign: 'center',
+                        })}
+                    >
+                        Time Until Mint:
+                    </div>
+                    <div className={css({ textAlign: 'center' })}>
+                        {FormatTimeOffset(startDate - time)}
+                    </div>
+                    <div
+                        className={css({
+                            marginTop: '10px',
+                            fontSize: '30px',
+                            textAlign: 'center',
+                        })}
+                    >
+                        <span className={css({ fontWeight: 'bold' })}>
+                            Whitelist Spots:{' '}
+                        </span>
+                        {isMainMint
+                            ? mainWhitelistCount
+                            : secondaryWhitelistCount}
+                    </div>
+                </div>
+            )}
+            {startDate <= time && (
+                <>
+                    <Box sx={{ width: '100%', marginBottom: '20px' }}>
+                        <Stepper activeStep={step} alternativeLabel>
+                            {steps.map((label, i) => (
+                                <Step
+                                    onClick={(): void =>
+                                        setStep((j) => Math.min(i, j))
+                                    }
+                                    className={css({ cursor: 'pointer' })}
+                                    key={label}
+                                    tabIndex={0}
+                                >
+                                    <StepLabel
+                                        componentsProps={{
+                                            label: {
+                                                className: css({
+                                                    textAlign: 'center',
+                                                    color: theme.fontColors.normal.secondary.getCSSColor(
+                                                        1
+                                                    ),
+                                                }),
+                                            },
+                                        }}
+                                    >
+                                        {label}
+                                    </StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    </Box>
+                    <div>
+                        {steps[step] === 'Select Eligibility' && (
+                            <WhitelistTypeSection
+                                type={type}
+                                onTypeSelected={(t): void => {
+                                    setType(t);
+                                    setStep((s) => s + 1);
                                 }}
-                            >
-                                {label}
-                            </StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
-            </Box>
-            <div>
-                {steps[step] === 'Select Eligibility' && (
-                    <WhitelistTypeSection
-                        type={type}
-                        onTypeSelected={(t): void => {
-                            setType(t);
-                            setStep((s) => s + 1);
-                        }}
-                    />
-                )}
-                {steps[step] === 'Provide Additional Info' && (
-                    <AdditionalInfoSection
-                        type={type}
-                        additionalInfo={additionalInfo}
-                        setAdditionalInfo={(a): void => {
-                            setAdditionalInfo(a);
-                            setStep((s) => s + 1);
-                        }}
-                    />
-                )}
-                {steps[step] === 'Transact' && (
-                    <TransactSection
-                        type={type}
-                        spendingIds={additionalInfo.spendingIds}
-                        batchSecret={additionalInfo.secretCode}
-                        sale="presale"
-                        mainMint={!!isMainMint}
-                        onTransact={(t): void => {
-                            setTx(t);
-                            setStep((s) => s + 1);
-                        }}
-                    />
-                )}
-                {steps[step] === 'Complete' && (
-                    <CompleteSection
-                        returnToStart={(): void => {
-                            setStep(0);
-                            setAdditionalInfo({});
-                        }}
-                        tx={tx}
-                    />
-                )}
-            </div>
-        </div>
+                            />
+                        )}
+                        {steps[step] === 'Provide Additional Info' && (
+                            <AdditionalInfoSection
+                                type={type}
+                                additionalInfo={additionalInfo}
+                                setAdditionalInfo={(a): void => {
+                                    setAdditionalInfo(a);
+                                    setStep((s) => s + 1);
+                                }}
+                            />
+                        )}
+                        {steps[step] === 'Transact' && (
+                            <TransactSection
+                                type={type}
+                                spendingIds={additionalInfo.spendingIds}
+                                batchSecret={additionalInfo.secretCode}
+                                sale="presale"
+                                mainMint={!!isMainMint}
+                                onTransact={(t): void => {
+                                    setTx(t);
+                                    setStep((s) => s + 1);
+                                }}
+                            />
+                        )}
+                        {steps[step] === 'Complete' && (
+                            <CompleteSection
+                                returnToStart={(): void => {
+                                    setStep(0);
+                                    setAdditionalInfo({});
+                                }}
+                                tx={tx}
+                            />
+                        )}
+                    </div>
+                </>
+            )}
+        </MintWrapper>
     );
 };
 
