@@ -106,7 +106,10 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
                                 },
                             })}
                             buttonType={ButtonType.primary}
-                            onClick={(): void => history.push(Page.Main)}
+                            onClick={(): void => {
+                                history.push(Page.Main);
+                                setOpen(false);
+                            }}
                         >
                             Go Home
                         </Button>
@@ -125,6 +128,7 @@ export const Header = (): JSX.Element => {
 
     const [css] = useStyletron();
     const history = useHistory();
+    const location = useLocation();
 
     return (
         <div
@@ -195,27 +199,28 @@ export const Header = (): JSX.Element => {
                     },
                 })}
             />
-            <Button
-                buttonType={ButtonType.wireframe}
-                className={css({
-                    borderRadius: '1000px',
-                    margin: '5px',
-                    height: '35px',
-                    transition: 'transform 500ms',
-                    padding: '0px 10px 0px 10px !important',
-                    ':hover': {
-                        transform: 'scale(1.1)',
-                    },
-                })}
-                onClick={(): void => history.push(Page.Mint)}
-                disabled={!tokenContractAddress}
-            >
-                <div
+            {location.pathname !== Page.Mint && (
+                <Button
+                    buttonType={ButtonType.wireframe}
                     className={css({
-                        transform: 'color 500ms',
+                        borderRadius: '1000px',
+                        margin: '5px',
+                        height: '35px',
+                        transition: 'transform 500ms',
+                        padding: '0px 10px 0px 10px !important',
                         ':hover': {
-                            color: 'transparent !important',
-                            backgroundImage: `linear-gradient(
+                            transform: 'scale(1.1)',
+                        },
+                    })}
+                    onClick={(): void => history.push(Page.Mint)}
+                    disabled={!tokenContractAddress}
+                >
+                    <div
+                        className={css({
+                            transform: 'color 500ms',
+                            ':hover': {
+                                color: 'transparent !important',
+                                backgroundImage: `linear-gradient(
                                     90deg,
                                     rgba(255, 0, 0, 1) 0%,
                                     rgba(255, 154, 0, 1) 10%,
@@ -229,13 +234,14 @@ export const Header = (): JSX.Element => {
                                     rgba(251, 7, 217, 1) 90%,
                                     rgba(255, 0, 0, 1) 100%
                                 )`,
-                            '-webkit-background-clip': 'text',
-                        },
-                    })}
-                >
-                    Magic Mint
-                </div>
-            </Button>
+                                '-webkit-background-clip': 'text',
+                            },
+                        })}
+                    >
+                        Magic Mint
+                    </div>
+                </Button>
+            )}
             <NavDropdown className={css({ margin: '5px' })} />
         </div>
     );
