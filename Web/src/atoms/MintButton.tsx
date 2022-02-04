@@ -50,12 +50,10 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
         () =>
             price.multiply(
                 new BigDecimal(
-                    type === WhitelistType.SecondaryHolder
-                        ? spendingIds?.length || 0
-                        : amount
+                    type === WhitelistType.SecondaryHolder ? 0 : amount // secondary holders mint free
                 )
             ),
-        [amount, price, spendingIds, type]
+        [amount, price, type]
     );
 
     const { api } = useShroomieContext();
