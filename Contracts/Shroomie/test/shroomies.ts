@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import type { ShroomiesInstance } from '../types/truffle-contracts';
 
@@ -1914,6 +1915,177 @@ contract('Shroomies Mud Club', (accounts) => {
             )[0].toString(),
             '0'
         );
+    });
+
+    // ------------------------------------ SECONDARY HOLDER FREE MINT -------------------------------------------------------
+
+    it('calls secondaryHolderWhitelistMint (fails due to value provided)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+
+        await shroomiesInstance.secondaryHolderWhitelistMint([1]);
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([2], { value: '10' })
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to not main)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+
+        await shroomiesInstance.secondaryHolderWhitelistMint([1]); // test run
+        await shroomiesInstance.updateMainCollectionMinting(false); // end main mint
+
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([2])
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to whitelist mint not active)', async () => {
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            later,
+            later + 100,
+            later
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([2])
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to provided NFTs in main collection)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now,
+            undefined,
+            undefined,
+            100,
+            50
+        ); // 50 secondary, 50 main
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], true); // mint ids 51-60
+
+        assert.equal(await shroomiesInstance.ownerOf(51), accounts[0]);
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([51])
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to secondary not owned)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[1]], false); // mint ids 1-10 to another account
+
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([1])
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to secondary already used)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+        await shroomiesInstance.secondaryHolderWhitelistMint([1]); // use token 1
+
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([1])
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (fails due to double spending)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now
+        );
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+
+        await truffleAssert.fails(
+            shroomiesInstance.secondaryHolderWhitelistMint([1, 1]) // double spend
+        );
+    });
+
+    it('calls secondaryHolderWhitelistMint (mints the number of tokens provided)', async () => {
+        const now = 1;
+        const later = Math.floor(new Date(2030, 10).valueOf() / 1000);
+
+        const { shroomiesInstance } = await getShroomiesInstance(
+            now,
+            later,
+            now,
+            undefined,
+            undefined,
+            100,
+            50
+        ); // 50 main, 50 secondary
+
+        await shroomiesInstance.updateMainCollectionMinting(true); // start main mint
+        await shroomiesInstance.ownerMintTo([10], [accounts[0]], false); // mint ids 1-10
+
+        // BALANCEOF is now 10
+
+        await shroomiesInstance.secondaryHolderWhitelistMint([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        ]);
+
+        assert.equal(
+            (await shroomiesInstance.balanceOf(accounts[0])).toString(),
+            '20'
+        );
+
+        for (let i = 51; i <= 60; i++) {
+            const owner = await shroomiesInstance.ownerOf(i);
+            assert.equal(owner, accounts[0]);
+        }
     });
 
     // ------------------------------------------------ MINT -----------------------------------------------------------------

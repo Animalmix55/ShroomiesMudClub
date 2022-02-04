@@ -503,7 +503,7 @@ contract Shroomies is ERC721, Ownable, ReentrancyGuard {
      *                  on the main collection. Does not do anything (like burn) secondary NFTs.
      */
     function secondaryHolderWhitelistMint(uint16[] calldata heldIds) external payable nonReentrant {
-        require(mintPrice * heldIds.length == msg.value, "Bad value");
+        require(msg.value == 0, "Bad value"); // free mint
         require(mainCollectionMinting, "Not main");
         require(
             whitelistMint.startDate <= block.timestamp &&
