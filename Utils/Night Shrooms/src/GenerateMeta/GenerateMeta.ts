@@ -58,7 +58,7 @@ const pickRandomAttribute = (attribute: Layer) => {
 const compileImages = (paths: string[]) => {
     const base = sharp(paths[0]);
 
-    base.composite(paths.slice(1).map((f) => ({ input: f }))).webp();
+    base.composite(paths.slice(1).map((f) => ({ input: f }))).png();
 
     return base;
 };
@@ -114,7 +114,7 @@ const applyRules = (_NFT: ERC721Meta, originalLayers: Layer[]) => {
     let NFT = { ..._NFT, attributes: [..._NFT.attributes] } as ERC721Meta;
 
     let face = getAttribute(NFT, LayerType.Face);
-    const targetFaces = ['HAL', 'KITT-Y'].map((a) =>
+    const targetFaces = ['HAL', 'KITT'].map((a) =>
         getAsset(a, LayerType.Face, originalLayers)
     );
 
@@ -341,7 +341,8 @@ const applyRules = (_NFT: ERC721Meta, originalLayers: Layer[]) => {
 
     headGear = getAttribute(NFT, LayerType.Headgear);
     if (headGear?.value.includes('ANTLERS') && crypto.randomInt(100) <= 75) {
-        const targetColor = headGear.value.split(' ')[1];
+        const targetColor =
+            headGear.value.split(' ')[headGear.value.split(' ').length - 1];
 
         const gillValue = gill.value.split(' ');
         gillValue[0] = targetColor;
@@ -1026,6 +1027,64 @@ const attributesInDomain = (
         }
     }
 
+    const allBodyStripes =
+        originalLayers
+            .find((l) => l.type === LayerType['Body Gear'])
+            ?.assets.filter((a) =>
+                a.displayName.toLowerCase().includes('stripe')
+            ) || [];
+
+    // match stripe to gills/spots
+    if (
+        allBodyStripes.some((a) =>
+            a.displayName.includes(bodyGear?.value.toLowerCase() || '_____')
+        )
+    ) {
+        let newStripe: Asset | undefined;
+        const bodySpot = getAttribute(NFT, LayerType['Body Spots']);
+        const headSpot = getAttribute(NFT, LayerType['Head Spots']);
+        const topSpots = getAttribute(NFT, LayerType['Top Spots']);
+
+        let attempts = 0;
+        while (!newStripe) {
+            if (attempts > 10) break;
+            attempts += 1;
+            const randInt = crypto.randomInt(101);
+            try {
+                let color: string;
+                if (randInt <= 33 && bodySpot) {
+                    // match to body spot
+                    color = bodySpot.value;
+                } else if (randInt <= 66 && headSpot) {
+                    color = headSpot.value;
+                } else if (topSpots) {
+                    color = topSpots.value;
+                }
+
+                newStripe = allBodyStripes.find((s) =>
+                    s.displayName.toLowerCase().includes(color)
+                );
+            } catch (e) {
+                // eslint-disable-next-line no-continue
+                continue;
+            }
+        }
+
+        if (newStripe)
+            NFT = {
+                ...NFT,
+                attributes: [
+                    ...NFT.attributes.filter(
+                        (a) => a.trait_type !== String(LayerType['Body Gear'])
+                    ),
+                    {
+                        trait_type: String(LayerType['Body Gear']),
+                        value: newStripe.displayName,
+                    },
+                ],
+            };
+    }
+
     return NFT;
 };
 
@@ -1110,20 +1169,20 @@ const isValid = (
 
         const legalForeground = ['FIREFLY', 'FIREFLIES'];
 
-        const legalHats = ['BLACK CROWN', 'COOL GLOW-SWEATBANDS'];
+        const legalHats = ['BLACK CROWN', 'COOL SWEATBAND'];
 
         const legalHeadgear = [
-            'HORNS YELLOW GLOW',
-            'ANTLERS YELLOW GLOW',
-            'BUG ANTENNAE GLOW',
+            'HORNS YELLOW',
+            'ANTLERS BUCK YELLOW',
+            'BUG ANTENNAE',
             'HEADLAMP',
             'ANGLER',
             'CLUSTER GLOW',
-            'HALO GREEN GLOW',
-            'HALO YELLOW GLOW',
-            '3 WORM FRIENDS YELLOW',
+            'HALO GREEN',
+            'HALO YELLOW',
+            '3 WORM FRIEND YELLOW',
             '1 WORM FRIEND YELLOW',
-            '3 WORM FRIENDS GREEN',
+            '3 WORM FRIEND GREEN',
             '1 WORM FRIEND GREEN',
         ];
 
@@ -1150,8 +1209,13 @@ const isValid = (
         ];
 
         const legalBodyGear = [
-            'SLASHER GLOW',
+            'SLASHER BLUE',
+            'SLASHER YELLOW',
             'SLASHER GREEN',
+            'SLASHER ORANGE',
+            'SLASHER PINK',
+            'SLASHER PURPLE',
+            'SLASHER TURQ',
             'TAC HOODIE',
             'SAFETY VEST',
         ];
@@ -1205,19 +1269,19 @@ const isValid = (
 
         const legalForeground = ['FIREFLIES'];
 
-        const legalHats = ['COOL GLOW-SWEATBANDS'];
+        const legalHats = ['COOL SWEATBAND'];
 
         const legalHeadgear = [
-            'HORNS YELLOW GLOW',
-            'BUG ANTENNAE GLOW',
+            'HORNS YELLOW',
+            'BUG ANTENNAE',
             'CATERPILLAR GLOW WORM',
             'HEADLAMP',
             'CLUSTER GLOW',
-            'HALO GREEN GLOW',
-            'HALO YELLOW GLOW',
-            '3 WORM FRIENDS YELLOW',
+            'HALO GREEN',
+            'HALO YELLOW',
+            '3 WORM FRIEND YELLOW',
             '1 WORM FRIEND YELLOW',
-            '3 WORM FRIENDS GREEN',
+            '3 WORM FRIEND GREEN',
             '1 WORM FRIEND GREEN',
         ];
 
@@ -1250,7 +1314,16 @@ const isValid = (
             'GOO ELECTRIC TURQ',
             'GOO ELECTRIC YELLOW',
         ];
-        const legalBodyGear = ['SLASHER GLOW', 'SLASHER GREEN', 'TRACK GLOW'];
+        const legalBodyGear = [
+            'SLASHER BLUE',
+            'SLASHER YELLOW',
+            'SLASHER GREEN',
+            'SLASHER ORANGE',
+            'SLASHER PINK',
+            'SLASHER PURPLE',
+            'SLASHER TURQ',
+            'TRACK GLOW',
+        ];
 
         const result = attributesInDomain(
             NFT,
@@ -1285,11 +1358,11 @@ const isValid = (
 
         const legalHeadgear = [
             'LASER BATS',
-            'BUG ANTENNAE GLOW',
+            'BUG ANTENNAE',
             'CATERPILLAR GLOW WORM',
             'HEADLAMP',
             'ANGLER',
-            'HALO PINK GLOW',
+            'HALO PINK',
             'POISON DART FROG BLUE',
             'POISON DART FROG GREEN',
         ];
@@ -1302,9 +1375,6 @@ const isValid = (
             'BEAD YELLOW',
             'LEFT EYE PINK',
             'NIGHT VISION',
-            'SOLID BEAM ELECTRIC PINK',
-            'SOLID BEAM ELECTRIC PURPLE',
-            'SOLID BEAM ELECTRIC GREEN',
             'PINK REPTILE',
             'PURPLE REPTILE',
             'TURQ REPTILE',
@@ -1312,7 +1382,6 @@ const isValid = (
             'RIKKI YELLOW REPTILE',
             'X X GOO PINK',
             'X X SILENT PINK',
-            'DUPLI',
             'GOO ELECTRIC PINK',
         ];
 
@@ -1391,10 +1460,10 @@ const isValid = (
     );
 
     const threeWormFriends = [
-        '3 WORM FRIENDS GREEN',
-        '3 WORM FRIENDS BLUE',
-        '3 WORM FRIENDS PINK',
-        '3 WORM FRIENDS YELLOW',
+        '3 WORM FRIEND GREEN',
+        '3 WORM FRIEND BLUE',
+        '3 WORM FRIEND PINK',
+        '3 WORM FRIEND YELLOW',
     ].map((a) => getAsset(a, LayerType.Headgear, originalLayers));
 
     if (
@@ -1432,7 +1501,8 @@ const isValid = (
 
     if (
         gasMask.map((f) => f.displayName).includes(face?.value || '___') &&
-        headgear?.value === headLamp.displayName
+        (headgear?.value === headLamp.displayName ||
+            headgear?.value.includes('3 WORM'))
     )
         NFT = {
             ...NFT,
@@ -1463,8 +1533,8 @@ const isValid = (
     );
     let excludedHats = [
         'BEANIE BLUE',
-        'COOL GLOW-SWEATBANDS',
-        'ORANGE SWEAT',
+        'COOL SWEATBAND',
+        'ORANGE SWEATBAND',
     ].map((b) => getAsset(b, LayerType.Hat, originalLayers));
 
     if (
@@ -1510,8 +1580,8 @@ const isValid = (
             ],
         };
 
-    const targetHeadgear = ['BUG ANTENNAE GLOW', 'ANGLER', 'HEADLAMP'].map(
-        (b) => getAsset(b, LayerType.Headgear, originalLayers)
+    const targetHeadgear = ['BUG ANTENNAE', 'ANGLER', 'HEADLAMP'].map((b) =>
+        getAsset(b, LayerType.Headgear, originalLayers)
     );
     excludedFaces = originalLayers
         .find((l) => l.type === LayerType.Face)!
@@ -1556,7 +1626,7 @@ const isValid = (
         getAsset(b, LayerType.Body, originalLayers)
     );
 
-    excludedHats = ['BEANIE BLUE', 'COOL GLOW-SWEATBANDS'].map((b) =>
+    excludedHats = ['BEANIE BLUE', 'COOL SWEATBAND'].map((b) =>
         getAsset(b, LayerType.Hat, originalLayers)
     );
 
@@ -1607,7 +1677,7 @@ const isValid = (
             ],
         };
 
-    const requiredFaces = ['KITT-Y', 'HAL'].map((a) =>
+    const requiredFaces = ['KITT', 'HAL'].map((a) =>
         getAsset(a, LayerType.Face, originalLayers)
     );
     let requiredBody = ['BLACK'].map((b) =>
@@ -1717,7 +1787,7 @@ const isValid = (
         ?.assets.filter((a) => a.displayName.includes('SWEAT'));
 
     if (
-        ['KITT-Y', 'HAL']
+        ['KITT', 'HAL']
             .map((f) => getAsset(f, LayerType.Face, originalLayers).displayName)
             .includes(face?.value || '____') &&
         (headgear?.value === headLamp.displayName ||
@@ -1770,6 +1840,50 @@ const isValid = (
         wormFriends
             ?.map((f) => f.displayName)
             .includes(headgear?.value || '____')
+    )
+        return false;
+
+    if (
+        face?.value ===
+            getAsset('DUPLI', LayerType.Face, originalLayers).displayName &&
+        poisonDartFrogs
+            ?.map((f) => f.displayName)
+            .includes(headgear?.value || '____')
+    )
+        return false;
+
+    if (
+        face?.value ===
+            getAsset('KITT', LayerType.Face, originalLayers).displayName &&
+        wormFriends
+            ?.map((f) => f.displayName)
+            .includes(headgear?.value || '____')
+    )
+        return false;
+
+    if (
+        bodyGear?.value ===
+            getAsset('SAFETY VEST', LayerType['Body Gear'], originalLayers)
+                .displayName &&
+        handItem?.value.includes('HULA')
+    )
+        return false;
+
+    if (
+        face?.value ===
+            getAsset('LEFT EYE YELLOW 2', LayerType.Face, originalLayers)
+                .displayName &&
+        wormFriends
+            ?.map((f) => f.displayName)
+            .includes(headgear?.value || '____')
+    )
+        return false;
+
+    if (
+        getAttribute(NFT, LayerType.Texture) &&
+        headgear?.value ===
+            getAsset('LASER BATS', LayerType.Headgear, originalLayers)
+                .displayName
     )
         return false;
 
@@ -2052,7 +2166,7 @@ export const generateERC721Metadata = (
         if (generateImages) {
             const image = compileImages(imagePaths);
             image
-                .toFile(`${IMAGEOUTDIR}/${i}.webp`)
+                .toFile(`${IMAGEOUTDIR}/${i}.png`)
                 .then(() => console.log(`Generated image for token id: ${i}`))
                 .catch((e) => {
                     console.error(
@@ -2124,7 +2238,7 @@ export const regenerateImages = (
             console.log(`Generating token image for id: ${id}`);
             const image = compileImages(paths);
             image
-                .toFile(`${outDir}/${id}.webp`)
+                .toFile(`${outDir}/${id}.png`)
                 .then(() => console.log(`Generated image for token id: ${id}`))
                 .catch((e) => {
                     console.error(
