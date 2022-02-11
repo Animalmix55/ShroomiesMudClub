@@ -87,7 +87,7 @@ export const TransactionButton = <
                         setPending(false);
                         setHash('');
                     })
-                    .then(() =>
+                    .then((tx) =>
                         toast(
                             <div
                                 className={css({
@@ -106,7 +106,7 @@ export const TransactionButton = <
                                 type: 'success',
                                 onClick: () =>
                                     window.open(
-                                        `${etherscanUrl}/tx/${hash}`,
+                                        `${etherscanUrl}/tx/${tx.transactionHash}`,
                                         '_blank'
                                     ),
                             }

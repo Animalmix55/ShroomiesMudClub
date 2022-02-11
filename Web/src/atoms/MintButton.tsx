@@ -179,7 +179,6 @@ export const MintButton = (props: MintButtonProps): JSX.Element => {
                     }}
                     tx={{
                         from: accounts[0],
-                        value: mintPrice.multiply(BASE).floor().getValue(),
                     }}
                     buttonType={ButtonType.primary}
                     type="button"

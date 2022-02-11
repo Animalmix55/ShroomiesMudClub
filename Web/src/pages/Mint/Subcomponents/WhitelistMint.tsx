@@ -100,6 +100,7 @@ const WhitelistTypeButton = ({
     onClick,
     disabled,
     className,
+    loading,
 }: {
     title: string;
     description: string;
@@ -107,6 +108,7 @@ const WhitelistTypeButton = ({
     disabled?: boolean;
     onClick?: () => void;
     className?: string;
+    loading?: boolean;
 }): JSX.Element => {
     const [css] = useStyletron();
 
@@ -118,7 +120,8 @@ const WhitelistTypeButton = ({
             className={ClassNameBuilder(
                 className,
                 css({
-                    display: 'block',
+                    display: 'flex',
+                    alignItems: 'center',
                     margin: '10px',
                     textAlign: 'left',
                     borderRadius: '10px',
@@ -132,8 +135,18 @@ const WhitelistTypeButton = ({
             disabled={disabled}
             forceHover={selected}
         >
-            <div>{title}</div>
-            <div className={css({ fontWeight: 'normal' })}>{description}</div>
+            {loading && (
+                <Spinner
+                    className={css({ marginRight: '5px' })}
+                    size={SpinnerSize.medium}
+                />
+            )}
+            <div>
+                <div>{title}</div>
+                <div className={css({ fontWeight: 'normal' })}>
+                    {description}
+                </div>
+            </div>
         </Button>
     );
 };
@@ -146,7 +159,8 @@ const WhitelistTypeSection = (
 
     const { main: mainWhitelistCount, secondary: secondaryWhitelistCount } =
         useWhitelistCounts();
-    const whitelistEligibleShrooms = useWhitelistEligibleNightShrooms();
+    const [whitelistEligibleShrooms, whitelistEligibleShroomsLoading] =
+        useWhitelistEligibleNightShrooms();
 
     const [value, setValue] = React.useState(type);
     const [css] = useStyletron();
@@ -159,6 +173,7 @@ const WhitelistTypeSection = (
                 selected={value === WhitelistType.SecondaryHolder}
                 onClick={(): void => setValue(WhitelistType.SecondaryHolder)}
                 disabled={!isMainMint || whitelistEligibleShrooms.length === 0}
+                loading={whitelistEligibleShroomsLoading}
             />
             <WhitelistTypeButton
                 title="Whitelist Recipient"
@@ -180,7 +195,7 @@ const WhitelistTypeSection = (
             <ContinueButton
                 disabled={value === undefined}
                 onClick={(): void => {
-                    if (value) onTypeSelected(value);
+                    if (value !== undefined) onTypeSelected(value);
                 }}
             />
         </div>
@@ -191,16 +206,19 @@ const AdditionalInfoSection = ({
     type,
     setAdditionalInfo,
     additionalInfo,
+    isMainMint,
 }: {
     type?: WhitelistType;
     setAdditionalInfo: React.Dispatch<React.SetStateAction<AdditionalInfo>>;
     additionalInfo: AdditionalInfo;
+    isMainMint: boolean;
 }): JSX.Element => {
     const [css] = useStyletron();
     const theme = useThemeContext();
     const { tokenContract } = useContractContext();
     const [value, setValue] = React.useState<AdditionalInfo>(additionalInfo);
-    const whitelistEligibleShrooms = useWhitelistEligibleNightShrooms();
+    const [whitelistEligibleShrooms, whitelistEligibleShroomsLoading] =
+        useWhitelistEligibleNightShrooms();
     const { accounts } = useWeb3();
     const batchSignatureGetter = useBatchSignatureGetter(accounts[0]);
 
@@ -239,7 +257,15 @@ const AdditionalInfoSection = ({
                             if (!value.secretCode)
                                 throw new Error('No code provided');
                             try {
-                                await batchSignatureGetter(value.secretCode);
+                                const bs = await batchSignatureGetter(
+                                    value.secretCode
+                                );
+
+                                if (!bs) throw new Error('Batch not found');
+                                if (!!bs.mainCollection !== !!isMainMint)
+                                    throw new Error(
+                                        'Batch for different collection'
+                                    );
                                 setAdditionalInfo(value);
                             } catch (e) {
                                 if (String(e).includes('404'))
@@ -277,14 +303,27 @@ const AdditionalInfoSection = ({
                         be usable for whitelist after transacting.
                     </div>
                     <div
-                        className={css({ overflow: 'auto', maxWidth: '900px' })}
+                        className={css({
+                            overflow: 'auto',
+                            maxWidth: '900px',
+                            maxHeight: '400px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                        })}
                     >
-                        <TokenGrid
-                            tokens={whitelistEligibleShrooms}
-                            contract={tokenContract}
-                            selectedTokens={value.spendingIds || []}
-                            onChange={(v): void => setValue({ spendingIds: v })}
-                        />
+                        {whitelistEligibleShroomsLoading && (
+                            <Spinner size={SpinnerSize.large} />
+                        )}
+                        {!whitelistEligibleShroomsLoading && (
+                            <TokenGrid
+                                tokens={whitelistEligibleShrooms}
+                                contract={tokenContract}
+                                selectedTokens={value.spendingIds || []}
+                                onChange={(v): void =>
+                                    setValue({ spendingIds: v })
+                                }
+                            />
+                        )}
                     </div>
                     <ContinueButton
                         onClick={(): void => setAdditionalInfo(value)}
@@ -311,19 +350,39 @@ const TransactSection = (props: TransactSectionProps): JSX.Element => {
 
     const max = React.useMemo(() => {
         let max = 0;
-        if (whitelist.main) {
-            if (type === WhitelistType.BulkWhitelist) {
-                if (batch && batch.mainCollection) max = batch.batchSize;
-            } else {
-                max = whitelist.main;
+        if (mainMint) {
+            switch (type) {
+                case WhitelistType.BulkWhitelist: {
+                    max = batch?.mainCollection
+                        ? batch.batchSize - mintedInBatch
+                        : 0;
+                    break;
+                }
+                case WhitelistType.SecondaryHolder: {
+                    max = Infinity;
+                    break;
+                }
+                case WhitelistType.UserWhitelist: {
+                    max = whitelist.main;
+                }
             }
-        } else if (type === WhitelistType.BulkWhitelist) {
-            if (batch && !batch.mainCollection) max = batch.batchSize;
         } else {
-            max = whitelist.secondary;
+            switch (type) {
+                case WhitelistType.BulkWhitelist: {
+                    max =
+                        batch?.mainCollection === false
+                            ? batch.batchSize - mintedInBatch
+                            : 0;
+                    break;
+                }
+                case WhitelistType.UserWhitelist: {
+                    max = whitelist.secondary;
+                }
+            }
         }
-        return max - mintedInBatch;
-    }, [batch, mintedInBatch, type, whitelist]);
+
+        return Math.max(0, max);
+    }, [batch, mainMint, mintedInBatch, type, whitelist]);
 
     return (
         <div
@@ -361,7 +420,9 @@ const TransactSection = (props: TransactSectionProps): JSX.Element => {
                     textAlign: 'center',
                 })}
             >
-                {max > 0 && `You can mint up to ${max} in this mint.`}
+                {max > 0 &&
+                    max !== Infinity &&
+                    `You can mint up to ${max} in this mint.`}
                 {max === 0 && 'You are not eligible to mint.'}
             </div>
             <div
@@ -558,7 +619,7 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
     const { className } = props;
 
     const [css] = useStyletron();
-    const [step, setStep] = React.useState(0);
+    const [step, _setStep] = React.useState(0);
     const [type, setType] = React.useState<WhitelistType>();
     const [additionalInfo, setAdditionalInfo] = React.useState<AdditionalInfo>(
         {}
@@ -583,6 +644,29 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
         ],
         [type]
     );
+
+    const setStep: typeof _setStep = (s) => {
+        _setStep((prevStep) => {
+            let result: typeof prevStep;
+            if (typeof s === 'function') result = s(prevStep);
+            else result = s;
+
+            if (result === 0) {
+                setAdditionalInfo({});
+                setType(undefined);
+            }
+
+            return result;
+        });
+    };
+
+    React.useEffect(() => {
+        // reset additional info on return to step 0
+        if (step === 0) {
+            setAdditionalInfo({});
+            setType(undefined);
+        }
+    }, [step]);
 
     if (endDate < time) return <></>; // nothing
 
@@ -698,6 +782,7 @@ export const WhitelistMint = (props: WhitelistMintProps): JSX.Element => {
                         {steps[step] === 'Provide Additional Info' && (
                             <AdditionalInfoSection
                                 type={type}
+                                isMainMint={isMainMint}
                                 additionalInfo={additionalInfo}
                                 setAdditionalInfo={(a): void => {
                                     setAdditionalInfo(a);

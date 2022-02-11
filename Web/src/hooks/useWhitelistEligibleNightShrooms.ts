@@ -2,17 +2,23 @@ import React from 'react';
 import { useContractContext } from '../contexts/ContractContext';
 import useHeldTokens from './useHeldTokens';
 
-export const useWhitelistEligibleNightShrooms = (): number[] => {
+export const useWhitelistEligibleNightShrooms = (): [
+    heldIds: number[],
+    isLoading: boolean
+] => {
     const { tokenContract } = useContractContext();
     const heldIds = useHeldTokens(tokenContract);
 
     const [numNightShrooms, setNumNightShrooms] = React.useState(0);
+    const [numLoading, setNumLoading] = React.useState(false);
+    const [unspentLoading, setUnspentLoading] = React.useState(false);
 
     React.useEffect(() => {
         setNumNightShrooms(0);
         if (!tokenContract) {
             return;
         }
+        setNumLoading(true);
 
         tokenContract.methods
             .maxSupply()
@@ -21,12 +27,14 @@ export const useWhitelistEligibleNightShrooms = (): number[] => {
                 tokenContract.methods
                     .mainCollectionSize()
                     .call()
-                    .then((mainCollectionSize) =>
+                    .then((mainCollectionSize) => {
                         setNumNightShrooms(
                             Number(maxSupply) - Number(mainCollectionSize)
-                        )
-                    )
-            );
+                        );
+                    })
+                    .finally(() => setNumLoading(false))
+            )
+            .catch(() => setNumLoading(false));
     }, [tokenContract]);
 
     const nightShroomIds = React.useMemo(
@@ -47,6 +55,7 @@ export const useWhitelistEligibleNightShrooms = (): number[] => {
         if (!tokenContract) {
             return;
         }
+        setUnspentLoading(true);
 
         const handle = async (): Promise<void> => {
             const idIsSpent = await Promise.all(
@@ -60,10 +69,10 @@ export const useWhitelistEligibleNightShrooms = (): number[] => {
             );
         };
 
-        handle();
+        handle().finally(() => setUnspentLoading(false));
     }, [nightShroomIds, tokenContract]);
 
-    return unspentNightShroomIds;
+    return [unspentNightShroomIds, unspentLoading || numLoading];
 };
 
 export default useWhitelistEligibleNightShrooms;

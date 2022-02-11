@@ -35,7 +35,10 @@ export const Web3ContextProvider = ({
     const [chainId, setChainId] = React.useState<Chain>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [provider, _setProvider] = React.useState<any>();
-    const web3 = React.useMemo(() => new Web3(provider as never), [provider]);
+    const web3 = React.useMemo(
+        () => (provider ? new Web3(provider as never) : undefined),
+        [provider]
+    );
 
     const reload = React.useCallback(async () => {
         const provider = await detectEthereumProvider();
