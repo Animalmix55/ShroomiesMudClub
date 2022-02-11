@@ -28,6 +28,7 @@ const NavDropdown = ({ className }: { className?: string }): JSX.Element => {
     }, [scrollPos]);
 
     const sections = useScrollSections();
+
     const buttons = sections.map((s) => (
         <Button
             className={css({
@@ -130,11 +131,24 @@ export const Header = (): JSX.Element => {
     const history = useHistory();
     const location = useLocation();
 
+    const sections = useScrollSections();
+
+    const darkMode = React.useMemo(
+        () =>
+            sections.some(
+                (s) => s.selected && (s.id === 'CheckUsOut' || s.id === 'FAQ')
+            ),
+        [sections]
+    );
+
     return (
         <div
             className={css({
                 position: 'fixed',
                 height: '100px',
+                backgroundColor: darkMode
+                    ? theme.backgroundColor.getCSSColor(0.5)
+                    : undefined,
                 top: 0,
                 left: 0,
                 right: 0,
