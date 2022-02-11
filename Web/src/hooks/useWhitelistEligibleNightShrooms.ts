@@ -72,7 +72,10 @@ export const useWhitelistEligibleNightShrooms = (): [
         handle().finally(() => setUnspentLoading(false));
     }, [nightShroomIds, tokenContract]);
 
-    return [unspentNightShroomIds, unspentLoading || numLoading];
+    return [
+        unspentNightShroomIds,
+        unspentLoading || numLoading || heldIds.loading,
+    ];
 };
 
 export default useWhitelistEligibleNightShrooms;
